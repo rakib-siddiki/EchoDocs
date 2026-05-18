@@ -13,20 +13,20 @@ Also configure Nx project targets so that `nx run-many --target=build` compiles 
 
 ## Acceptance criteria
 
-- [ ] Nx monorepo initialised with `apps/web`, `apps/api`, `apps/worker` projects
-- [ ] `libs/ai`, `libs/types`, `libs/utils`, `libs/ui` library placeholders exist with barrel exports
-- [ ] `tsconfig.base.json` path aliases resolve across all apps and libs
-- [ ] ESLint + Prettier configured and passing on all files
-- [ ] `.env.example` documents every required environment variable (DB URL, Redis URL, Clerk keys, Gemini API key, GitHub webhook secret)
-- [ ] `docker-compose.yml` spins up Postgres and Redis locally
-- [ ] `apps/api` responds `200` to `GET /api/health`
-- [ ] `apps/web` renders a blank page at `/` without build errors
-- [ ] `apps/worker` starts and logs "Worker ready" without errors
-- [ ] `nx run-many --target=lint` passes with zero errors
+- [x] Nx monorepo initialised with `apps/web`, `apps/api`, `apps/worker` projects
+- [x] `libs/ai`, `libs/types`, `libs/utils`, `libs/ui` library placeholders exist with barrel exports
+- [x] `tsconfig.base.json` path aliases resolve across all apps and libs
+- [x] ESLint + Prettier configured and passing on all files
+- [x] `.env.example` documents every required environment variable (DB URL, Redis URL, Clerk keys, Gemini API key, GitHub webhook secret)
+- [x] `docker-compose.yml` spins up Postgres and Redis locally
+- [x] `apps/api` responds `200` to `GET /api/health`
+- [x] `apps/web` renders a blank page at `/` without build errors
+- [x] `apps/worker` starts and logs "Worker ready" without errors
+- [x] `nx run-many --target=lint` passes with zero errors
 
 ## Blocked by
 
 None — can start immediately.
 
 ## Status
-Pending
+Completed
