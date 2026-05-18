@@ -47,3 +47,8 @@ Thumbs.db
 .next
 out
 .agents/
+
+# local env files
+.env
+.env.local
+.env.*.local

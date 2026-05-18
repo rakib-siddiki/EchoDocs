@@ -41,17 +41,17 @@ A seed script should insert one sample `Document` (status `PROCESSED`) with two 
 
 ## Acceptance criteria
 
-- [ ] `pgvector` extension is enabled in Supabase
-- [ ] Prisma migration applies cleanly against a fresh Supabase database
-- [ ] `Document` table exists with all columns including `status` enum
-- [ ] `Chunk` table exists with `embedding vector(768)` column and cascade-delete on `documentId`
-- [ ] Seed script inserts sample data and runs without errors
-- [ ] `apps/api` can connect to Supabase using the env vars from `.env.example`
-- [ ] A raw SQL cosine similarity query (`ORDER BY embedding <=> $1`) returns results against seed data
+- [x] `pgvector` extension is enabled in Supabase
+- [x] Prisma migration applies cleanly against a fresh Supabase database
+- [x] `Document` table exists with all columns including `status` enum
+- [x] `Chunk` table exists with `embedding vector(768)` column and cascade-delete on `documentId`
+- [x] Seed script inserts sample data and runs without errors
+- [x] `apps/api` can connect to Supabase using the env vars from `.env.example`
+- [x] A raw SQL cosine similarity query (`ORDER BY embedding <=> $1`) returns results against seed data
 
 ## Blocked by
 
 - `01-monorepo-infrastructure-scaffold.md`
 
 ## Status
-Pending
+Done

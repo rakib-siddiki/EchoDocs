@@ -1,0 +1,37 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+model Document {
+  id        String         @id @default(uuid())
+  name      String
+  sourceUrl String?
+  status    DocumentStatus
+  chunks    Chunk[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model Chunk {
+  id         String   @id @default(uuid())
+  content    String
+  embedding  Unsupported("vector(768)")
+  chunkIndex Int
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
