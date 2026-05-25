@@ -1,4 +1,5 @@
 import { SignUp } from '@clerk/nextjs';
+import { dark } from '@clerk/themes';
 
 export default function SignUpPage() {
   return (
@@ -19,10 +20,11 @@ export default function SignUpPage() {
       <div className="shadow-2xl shadow-black/50 rounded-2xl overflow-hidden backdrop-blur-md border border-white/10 z-10">
         <SignUp
           appearance={{
+            baseTheme: dark,
             variables: {
               colorPrimary: '#a855f7',
-              colorBackground: '#1e293b',
-              colorInputBackground: '#0f172a',
+              colorBackground: '#0f172a',
+              colorInputBackground: '#1e293b',
               colorText: '#f8fafc',
               colorTextSecondary: '#94a3b8',
               colorInputText: '#f8fafc',
@@ -30,7 +32,7 @@ export default function SignUpPage() {
             },
             elements: {
               card: {
-                background: '#0f172a/80',
+                background: '#0f172a',
                 border: 'none',
               },
               socialButtonsBlockButton: {
