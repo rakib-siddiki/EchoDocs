@@ -35,6 +35,21 @@ export default function SignUpPage() {
                 background: '#0f172a',
                 border: 'none',
               },
+              headerTitle: {
+                color: '#f8fafc',
+              },
+              headerSubtitle: {
+                color: '#94a3b8',
+              },
+              formFieldLabel: {
+                color: '#f8fafc',
+              },
+              dividerText: {
+                color: '#64748b',
+              },
+              footerActionText: {
+                color: '#94a3b8',
+              },
               socialButtonsBlockButton: {
                 background: '#1e293b',
                 border: '1px solid #334155',
@@ -46,6 +61,7 @@ export default function SignUpPage() {
               formButtonPrimary: {
                 background: 'linear-gradient(to right, #8b5cf6, #d946ef)',
                 border: 'none',
+                color: '#ffffff',
                 '&:hover': {
                   background: 'linear-gradient(to right, #7c3aed, #c084fc)',
                 }
