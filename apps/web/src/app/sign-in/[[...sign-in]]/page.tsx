@@ -16,7 +16,7 @@ export default function SignInPage() {
           AI-Powered RAG Knowledge Engine
         </p>
       </div>
-      
+
       <div className="shadow-2xl shadow-black/50 rounded-2xl overflow-hidden backdrop-blur-md border border-white/10 z-10">
         <SignIn
           appearance={{
@@ -56,7 +56,7 @@ export default function SignInPage() {
                 color: '#f8fafc',
                 '&:hover': {
                   background: '#334155',
-                }
+                },
               },
               formButtonPrimary: {
                 background: 'linear-gradient(to right, #8b5cf6, #d946ef)',
@@ -64,15 +64,15 @@ export default function SignInPage() {
                 color: '#ffffff',
                 '&:hover': {
                   background: 'linear-gradient(to right, #7c3aed, #c084fc)',
-                }
+                },
               },
               footerActionLink: {
                 color: '#c084fc',
                 '&:hover': {
                   color: '#a855f7',
-                }
-              }
-            }
+                },
+              },
+            },
           }}
           routing="path"
           path="/sign-in"

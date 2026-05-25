@@ -77,3 +77,8 @@
     color: hsl(var(--foreground));
   }
 }
+
+/* Make Clerk secondary text/links visible on dark background */
+[data-color="secondary"] {
+  color: #ffffff !important;
+}
