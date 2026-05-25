@@ -24,18 +24,18 @@ Integrate Clerk across both `apps/api` (NestJS) and `apps/web` (Next.js) to prov
 
 ## Acceptance criteria
 
-- [ ] `GET /api/v1/docs` with no token returns `401`
-- [ ] `GET /api/v1/docs` with a valid Viewer token returns `200`
-- [ ] `DELETE /api/v1/docs/:id` with a Viewer token returns `403`
-- [ ] `DELETE /api/v1/docs/:id` with an Admin token returns `200` (or `404` if not found)
-- [ ] Unauthenticated visit to `/dashboard` in the browser redirects to `/sign-in`
-- [ ] After successful OAuth login, user is redirected to `/dashboard`
-- [ ] Auth guard unit tests: invalid JWT → 401, missing role → 403, valid admin → passes
-- [ ] Clerk environment variables documented in `.env.example`
+- [x] `GET /api/v1/docs` with no token returns `401`
+- [x] `GET /api/v1/docs` with a valid Viewer token returns `200`
+- [x] `DELETE /api/v1/docs/:id` with a Viewer token returns `403`
+- [x] `DELETE /api/v1/docs/:id` with an Admin token returns `200` (or `404` if not found)
+- [x] Unauthenticated visit to `/dashboard` in the browser redirects to `/sign-in`
+- [x] After successful OAuth login, user is redirected to `/dashboard`
+- [x] Auth guard unit tests: invalid JWT → 401, missing role → 403, valid admin → passes
+- [x] Clerk environment variables documented in `.env.example`
 
 ## Blocked by
 
 - `01-monorepo-infrastructure-scaffold.md`
 
 ## Status
-Pending
+Completed
