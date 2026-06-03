@@ -25,14 +25,14 @@ Session context (`sessionId`) is accepted but not used to maintain conversation 
 
 ## Acceptance criteria
 
-- [ ] `POST /api/v1/chat/query` with a question relevant to an ingested document returns a non-empty `answer` string
-- [ ] Response includes at least one `citation` with a valid `documentId` and `excerpt`
-- [ ] When no relevant chunks exist, the response `answer` contains a "not found in documents" message and `citations` is an empty array
-- [ ] Unauthenticated requests return `401`
-- [ ] Integration test: seed the DB with a known chunk; query with a question semantically related to it; assert the answer is non-empty and citation references the seeded document
-- [ ] Unit test: mock `EmbeddingService`, `VectorSearchService`, and Gemini client; assert all three are called in order with correct args
-- [ ] `sessionId` is accepted in the request body without error (ignored in v1)
-- [ ] Endpoint available at `/api/v1/chat/query`
+- [x] `POST /api/v1/chat/query` with a question relevant to an ingested document returns a non-empty `answer` string
+- [x] Response includes at least one `citation` with a valid `documentId` and `excerpt`
+- [x] When no relevant chunks exist, the response `answer` contains a "not found in documents" message and `citations` is an empty array
+- [x] Unauthenticated requests return `401`
+- [x] Integration test: seed the DB with a known chunk; query with a question semantically related to it; assert the answer is non-empty and citation references the seeded document
+- [x] Unit test: mock `EmbeddingService`, `VectorSearchService`, and Gemini client; assert all three are called in order with correct args
+- [x] `sessionId` is accepted in the request body without error (ignored in v1)
+- [x] Endpoint available at `/api/v1/chat/query`
 
 ## Blocked by
 
@@ -40,4 +40,4 @@ Session context (`sessionId`) is accepted but not used to maintain conversation 
 - `07-ingestion-processor-bullmq-worker.md`
 
 ## Status
-Pending
+Completed

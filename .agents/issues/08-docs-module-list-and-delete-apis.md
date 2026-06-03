@@ -15,18 +15,18 @@ The list endpoint should reflect real-time status — if a document is still `PE
 
 ## Acceptance criteria
 
-- [ ] `GET /api/v1/docs` returns `200` with a paginated array of documents for both Admin and Viewer tokens
-- [ ] Each document in the list includes `id`, `name`, `status`, `createdAt`, and `chunkCount`
-- [ ] `GET /api/v1/docs?page=1&limit=5` returns at most 5 results
-- [ ] `DELETE /api/v1/docs/:id` with an Admin token returns `204` and removes the document + all chunks from the DB
-- [ ] `DELETE /api/v1/docs/:id` with a Viewer token returns `403`
-- [ ] `DELETE /api/v1/docs/non-existent-id` returns `404`
-- [ ] Integration tests cover all status codes above
-- [ ] Unauthenticated requests to both endpoints return `401`
+- [x] `GET /api/v1/docs` returns `200` with a paginated array of documents for both Admin and Viewer tokens
+- [x] Each document in the list includes `id`, `name`, `status`, `createdAt`, and `chunkCount`
+- [x] `GET /api/v1/docs?page=1&limit=5` returns at most 5 results
+- [x] `DELETE /api/v1/docs/:id` with an Admin token returns `204` and removes the document + all chunks from the DB
+- [x] `DELETE /api/v1/docs/:id` with a Viewer token returns `403`
+- [x] `DELETE /api/v1/docs/non-existent-id` returns `404`
+- [x] Integration tests cover all status codes above
+- [x] Unauthenticated requests to both endpoints return `401`
 
 ## Blocked by
 
 - `05-docs-module-file-upload-api.md`
 
 ## Status
-Pending
+Completed

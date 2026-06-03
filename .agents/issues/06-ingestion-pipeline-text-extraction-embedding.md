@@ -21,18 +21,18 @@ Important: `Document.status` must only be written by this service — never by t
 
 ## Acceptance criteria
 
-- [ ] `IngestionService.run()` given a sample PDF produces at least one `Chunk` row in the database
-- [ ] `IngestionService.run()` given a sample Markdown file produces at least one `Chunk` row
-- [ ] Each `Chunk` has a non-null `embedding` field with 768 dimensions
-- [ ] `Document.status` transitions: `PENDING → PROCESSING` at start, `PROCESSING → PROCESSED` on success
-- [ ] `Document.status` is set to `FAILED` if text extraction or embedding throws
-- [ ] `chunkIndex` is correctly assigned in order (0, 1, 2, …) per document
-- [ ] Unit tests for `IngestionService` mock the Gemini API and Supabase DB; assert status transitions and chunk counts
-- [ ] No partial chunk writes on failure (all-or-nothing batch insert or cleanup on error)
+- [x] `IngestionService.run()` given a sample PDF produces at least one `Chunk` row in the database
+- [x] `IngestionService.run()` given a sample Markdown file produces at least one `Chunk` row
+- [x] Each `Chunk` has a non-null `embedding` field with 768 dimensions
+- [x] `Document.status` transitions: `PENDING → PROCESSING` at start, `PROCESSING → PROCESSED` on success
+- [x] `Document.status` is set to `FAILED` if text extraction or embedding throws
+- [x] `chunkIndex` is correctly assigned in order (0, 1, 2, …) per document
+- [x] Unit tests for `IngestionService` mock the Gemini API and Supabase DB; assert status transitions and chunk counts
+- [x] No partial chunk writes on failure (all-or-nothing batch insert or cleanup on error)
 
 ## Blocked by
 
 - `03-shared-types-and-libs-ai-foundation.md`
 
 ## Status
-Pending
+Completed

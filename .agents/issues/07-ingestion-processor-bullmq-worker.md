@@ -18,14 +18,14 @@ The worker app starts standalone (not embedded in `apps/api`) and connects to th
 
 ## Acceptance criteria
 
-- [ ] Worker starts, connects to Redis, and begins consuming the `ingestion` queue
-- [ ] End-to-end smoke test: upload a file via `POST /api/v1/docs/upload` → worker picks up the job → `Document.status` becomes `PROCESSED` within 30 seconds
-- [ ] If `IngestionService.run()` throws, the job is retried up to 3 times (verify via BullMQ job state)
-- [ ] After 3 failures, `Document.status` is `FAILED`
-- [ ] Re-queuing a `documentId` that already has chunks deletes the old chunks before inserting new ones
-- [ ] Worker processes up to 3 concurrent jobs without errors
-- [ ] Unit test for `IngestionProcessor`: mock `IngestionService`, assert it is called with correct args; assert re-throw on error
-- [ ] Worker concurrency and retry settings are configurable via environment variables
+- [x] Worker starts, connects to Redis, and begins consuming the `ingestion` queue
+- [x] End-to-end smoke test: upload a file via `POST /api/v1/docs/upload` → worker picks up the job → `Document.status` becomes `PROCESSED` within 30 seconds
+- [x] If `IngestionService.run()` throws, the job is retried up to 3 times (verify via BullMQ job state)
+- [x] After 3 failures, `Document.status` is `FAILED`
+- [x] Re-queuing a `documentId` that already has chunks deletes the old chunks before inserting new ones
+- [x] Worker processes up to 3 concurrent jobs without errors
+- [x] Unit test for `IngestionProcessor`: mock `IngestionService`, assert it is called with correct args; assert re-throw on error
+- [x] Worker concurrency and retry settings are configurable via environment variables
 
 ## Blocked by
 
@@ -33,4 +33,4 @@ The worker app starts standalone (not embedded in `apps/api`) and connects to th
 - `06-ingestion-pipeline-text-extraction-embedding.md`
 
 ## Status
-Pending
+Completed
