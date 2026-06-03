@@ -1,21 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { DashboardHeader } from './components/DashboardHeader';
+import { useAuth } from '../../contexts/AuthContext';
 import { FileUpload } from './Forms/FileUpload';
 import { DocumentList } from './components/DocumentList';
 import { DeleteConfirmDialog } from './Dialogs/DeleteConfirmDialog';
 import { useDocuments, DocumentItem } from '../../hooks/useDocuments';
+import { AUTH_ROLES } from '@/constants';
 
 export default function DashboardContainer() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  // Retrieve user role from Clerk public metadata
-  const userRole = (user?.publicMetadata?.role || 'viewer') as 'admin' | 'viewer';
-  const isAdmin = userRole === 'admin';
+  // Retrieve user role from our custom AuthContext
+  const userRole = (user?.role || AUTH_ROLES.VIEWER);
+  const isAdmin = userRole === AUTH_ROLES.ADMIN;
 
   // TanStack Query custom hook for documents
   const {
@@ -54,24 +54,25 @@ export default function DashboardContainer() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans">
-      <DashboardHeader />
-
+    <>
       <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-10 flex flex-col gap-8">
         {/* Welcome Section */}
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-slate-50 via-slate-200 to-slate-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-extrabold tracking-tight bg-linear-to-r from-slate-50 via-slate-200 to-slate-400 bg-clip-text text-transparent mb-2">
             Document Management
           </h1>
           <p className="text-slate-400 text-sm">
-            Upload, monitor, and manage your source materials. Documents are parsed and embedded for RAG query context.
+            Upload, monitor, and manage your source materials. Documents are
+            parsed and embedded for RAG query context.
           </p>
         </div>
 
         {/* Upload Zone (Only visible to Admins) */}
         {isAdmin ? (
           <div>
-            <h2 className="text-lg font-semibold text-slate-300 mb-3">Upload New Materials</h2>
+            <h2 className="text-lg font-semibold text-slate-300 mb-3">
+              Upload New Materials
+            </h2>
             <FileUpload onUpload={uploadFile} />
           </div>
         ) : (
@@ -81,7 +82,8 @@ export default function DashboardContainer() {
               Viewer Account
             </span>
             <span className="text-xs text-slate-400 border-l border-white/10 pl-3">
-              You are signed in as a viewer. Contact your administrator to upload or delete documents.
+              You are signed in as a viewer. Contact your administrator to
+              upload or delete documents.
             </span>
           </div>
         )}
@@ -89,7 +91,9 @@ export default function DashboardContainer() {
         {/* Documents Table */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-300">Ingested Documents</h2>
+            <h2 className="text-lg font-semibold text-slate-300">
+              Ingested Documents
+            </h2>
             <span className="text-xs text-slate-500 font-mono">
               Page {page}
             </span>
@@ -142,6 +146,6 @@ export default function DashboardContainer() {
           }}
         />
       )}
-    </div>
+    </>
   );
 }

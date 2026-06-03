@@ -5,13 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { verifyToken } from '@clerk/backend';
 import { IS_PUBLIC_KEY } from './decorators';
+import { verifyJwt } from './utils';
 
 @Injectable()
-export class ClerkAuthGuard implements CanActivate {
-  private readonly secretKey = process.env.CLERK_SECRET_KEY;
-
+export class JwtAuthGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -25,25 +23,30 @@ export class ClerkAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+    let token = '';
     const authHeader = request.headers['authorization'];
 
-    if (!authHeader) {
-      throw new UnauthorizedException('Missing authorization header');
+    if (authHeader) {
+      const [type, credentials] = authHeader.split(' ');
+      if (type === 'Bearer') {
+        token = credentials;
+      }
     }
 
-    const [type, token] = authHeader.split(' ');
+    // Fallback: extract token from cookies parsed by cookie-parser
+    if (!token && request.cookies) {
+      token = request.cookies['token'];
+    }
 
-    if (type !== 'Bearer' || !token) {
-      throw new UnauthorizedException('Invalid token format');
+    if (!token) {
+      throw new UnauthorizedException('Missing authorization token (Header or Cookie)');
     }
 
     try {
-      // Validate token using Clerk SDK
-      const payload = await verifyToken(token, {
-        secretKey: this.secretKey,
-      });
+      // Validate token using custom JWT helper
+      const payload = verifyJwt(token);
 
-      // Attach token payload to the request object
+      // Attach token payload to the request object (contains id, email, role)
       request.user = payload;
       return true;
     } catch (error) {

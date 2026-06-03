@@ -1,19 +1,19 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ClerkAuthGuard } from './clerk-auth.guard';
-import * as clerkBackend from '@clerk/backend';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import * as utils from './utils';
 
-jest.mock('@clerk/backend');
+jest.mock('./utils');
 
-describe('ClerkAuthGuard', () => {
-  let guard: ClerkAuthGuard;
+describe('JwtAuthGuard', () => {
+  let guard: JwtAuthGuard;
   let reflector: Reflector;
 
   beforeEach(() => {
     reflector = {
       getAllAndOverride: jest.fn(),
     } as any;
-    guard = new ClerkAuthGuard(reflector);
+    guard = new JwtAuthGuard(reflector);
   });
 
   it('should allow public routes', async () => {
@@ -66,8 +66,8 @@ describe('ClerkAuthGuard', () => {
 
   it('should verify valid token and attach user to request', async () => {
     reflector.getAllAndOverride = jest.fn().mockReturnValue(false);
-    const mockPayload = { sub: 'user_123', metadata: { role: 'viewer' } };
-    (clerkBackend.verifyToken as jest.Mock).mockResolvedValue(mockPayload);
+    const mockPayload = { id: 'user_123', email: 'test@example.com', role: 'viewer' };
+    (utils.verifyJwt as jest.Mock).mockReturnValue(mockPayload);
 
     const request = {
       headers: {
@@ -87,9 +87,11 @@ describe('ClerkAuthGuard', () => {
     expect(request.user).toEqual(mockPayload);
   });
 
-  it('should throw 401 if verifyToken throws', async () => {
+  it('should throw 401 if verifyJwt throws', async () => {
     reflector.getAllAndOverride = jest.fn().mockReturnValue(false);
-    (clerkBackend.verifyToken as jest.Mock).mockRejectedValue(new Error('Invalid token'));
+    (utils.verifyJwt as jest.Mock).mockImplementation(() => {
+      throw new Error('Invalid token');
+    });
 
     const request = {
       headers: {

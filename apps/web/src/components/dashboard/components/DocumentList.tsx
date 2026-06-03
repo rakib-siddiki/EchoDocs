@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { DocumentItem } from '../../../hooks/useDocuments';
-import { DOCUMENT_STATUS } from '@/constants';
+import { DOCUMENT_STATUS, type TAuthRole } from '@/constants';
 
 interface DocumentListProps {
   documents: DocumentItem[];
   isLoading: boolean;
-  userRole: 'admin' | 'viewer';
+  userRole: TAuthRole;
   onDeleteRequest: (doc: DocumentItem) => void;
 }
 

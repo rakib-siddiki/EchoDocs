@@ -6,9 +6,9 @@ import { PrismaService } from '../prisma.service';
 import { QueueService } from '../queue/queue.service';
 import { AuthModule } from '../auth/auth.module';
 import { PrismaModule } from '../prisma.module';
-import * as clerkBackend from '@clerk/backend';
+import * as authUtils from '../auth/utils';
 
-jest.mock('@clerk/backend');
+jest.mock('../auth/utils');
 
 describe('DocsController (Integration)', () => {
   let app: INestApplication;
@@ -71,20 +71,20 @@ describe('DocsController (Integration)', () => {
   };
 
   beforeAll(async () => {
-    // Setup Clerk Auth mock behavior
-    (clerkBackend.verifyToken as jest.Mock).mockImplementation(async (token) => {
+    // Setup Custom Auth mock behavior
+    (authUtils.verifyJwt as jest.Mock).mockImplementation((token) => {
       if (token === 'admin-token') {
         return {
-          sub: 'admin_user',
-          metadata: { role: 'admin' },
-          publicMetadata: { role: 'admin' },
+          id: 'admin_user',
+          email: 'admin@echodocs.com',
+          role: 'admin',
         };
       }
       if (token === 'viewer-token') {
         return {
-          sub: 'viewer_user',
-          metadata: { role: 'viewer' },
-          publicMetadata: { role: 'viewer' },
+          id: 'viewer_user',
+          email: 'viewer@echodocs.com',
+          role: 'viewer',
         };
       }
       throw new Error('Invalid token');

@@ -1,13 +1,11 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 
 export default async function Index() {
-  const { userId } = await auth();
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
 
-  if (userId) {
-    redirect('/dashboard');
-  }
+  const isAuthenticated = Boolean(token);
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-slate-950 text-slate-100 px-4 py-8 font-sans overflow-hidden">
@@ -31,15 +29,24 @@ export default async function Index() {
         </h1>
 
         <p className="text-lg md:text-xl text-slate-400 font-light leading-relaxed max-w-xl mx-auto mb-12">
-          EchoDocs turns your PDFs and Markdown files into interactive knowledge bases. 
-          Get instant, cited answers from your codebase or internal wiki without hallucinations.
+          EchoDocs turns your PDFs and Markdown files into interactive knowledge
+          bases. Get instant, cited answers from your codebase or internal wiki
+          without hallucinations.
         </p>
 
         <div className="flex gap-4 justify-center items-center">
-          <Link href="/sign-in" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl font-semibold text-lg shadow-[0_10px_25px_-5px_rgba(168,85,247,0.4)] transition-all cursor-pointer border-none">
+          <Link
+            href={isAuthenticated ? '/dashboard' : '/sign-in'}
+            className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl font-semibold text-lg shadow-[0_10px_25px_-5px_rgba(168,85,247,0.4)] transition-all cursor-pointer border-none"
+          >
             Get Started
           </Link>
-          <a href="https://github.com/rakib-siddiki/EchoDocs" target="_blank" rel="noopener noreferrer" className="bg-white/3 hover:bg-white/5 text-slate-100 px-10 py-4 rounded-xl font-semibold text-lg border border-white/10 backdrop-blur-sm transition-all cursor-pointer">
+          <a
+            href="https://github.com/rakib-siddiki/EchoDocs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-white/3 hover:bg-white/5 text-slate-100 px-10 py-4 rounded-xl font-semibold text-lg border border-white/10 backdrop-blur-sm transition-all cursor-pointer"
+          >
             View GitHub
           </a>
         </div>

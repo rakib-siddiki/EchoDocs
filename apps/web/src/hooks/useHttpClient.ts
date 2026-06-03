@@ -1,14 +1,12 @@
 'use client';
 
-import { useAuth } from '@clerk/nextjs';
+import { getCookie } from '@/lib/auth-utils';
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export function useHttpClient() {
-  const { getToken } = useAuth();
-
   const request = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
-    const token = await getToken();
+    const token = getCookie('token');
     const headers = {
       ...options.headers,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -43,7 +41,7 @@ export function useHttpClient() {
   return {
     get: <T>(path: string, options?: RequestInit) =>
       request<T>(path, { ...options, method: 'GET' }),
-    post: <T>(path: string, body?: any, options?: RequestInit) => {
+    post: <T>(path: string, body?: unknown, options?: RequestInit) => {
       const isFormData = body instanceof FormData;
       const headers = {
         ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
@@ -56,7 +54,7 @@ export function useHttpClient() {
         body: isFormData ? body : JSON.stringify(body),
       });
     },
-    put: <T>(path: string, body?: any, options?: RequestInit) => {
+    put: <T>(path: string, body?: unknown, options?: RequestInit) => {
       const isFormData = body instanceof FormData;
       const headers = {
         ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),

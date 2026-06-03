@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const argon2 = require('argon2');
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,30 @@ async function main() {
   // Clean up existing data to be idempotent
   await prisma.chunk.deleteMany({});
   await prisma.document.deleteMany({});
+  await prisma.user.deleteMany({});
+
+  // Seed default users
+  const adminEmail = 'admin@echodocs.com';
+  const adminHash = await argon2.hash('admin123');
+  await prisma.user.create({
+    data: {
+      email: adminEmail,
+      passwordHash: adminHash,
+      role: 'admin',
+    },
+  });
+
+  const viewerEmail = 'viewer@echodocs.com';
+  const viewerHash = await argon2.hash('viewer123');
+  await prisma.user.create({
+    data: {
+      email: viewerEmail,
+      passwordHash: viewerHash,
+      role: 'viewer',
+    },
+  });
+
+  console.log('Successfully seeded default users: admin@echodocs.com and viewer@echodocs.com');
 
   const document = await prisma.document.create({
     data: {
