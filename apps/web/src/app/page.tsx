@@ -1,13 +1,12 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { ROUTES } from '../constants';
 
 export default async function Index() {
   const { userId } = await auth();
 
   if (userId) {
-    redirect(ROUTES.DASHBOARD);
+    redirect('/dashboard');
   }
 
   return (
@@ -24,9 +23,9 @@ export default async function Index() {
           </span>
         </div>
 
-        <h1 className="text-5xl md:text-6xl font-black leading-none tracking-tight mb-6 bg-gradient-to-r from-slate-50 via-slate-200 to-slate-400 bg-clip-text text-transparent">
+        <h1 className="text-5xl md:text-6xl font-black leading-none tracking-tight mb-6 bg-linear-to-r from-slate-50 via-slate-200 to-slate-400 bg-clip-text text-transparent">
           Search & Query Your Documentation in
-          <span className="block bg-gradient-to-r from-sky-400 via-purple-500 to-pink-500 bg-clip-text text-transparent mt-1">
+          <span className="block bg-linear-to-r from-sky-400 via-purple-500 to-pink-500 bg-clip-text text-transparent mt-1">
             Real-Time Grounded AI
           </span>
         </h1>
@@ -40,7 +39,7 @@ export default async function Index() {
           <Link href="/sign-in" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl font-semibold text-lg shadow-[0_10px_25px_-5px_rgba(168,85,247,0.4)] transition-all cursor-pointer border-none">
             Get Started
           </Link>
-          <a href={ROUTES.GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" className="bg-white/3 hover:bg-white/5 text-slate-100 px-10 py-4 rounded-xl font-semibold text-lg border border-white/10 backdrop-blur-sm transition-all cursor-pointer">
+          <a href="https://github.com/rakib-siddiki/EchoDocs" target="_blank" rel="noopener noreferrer" className="bg-white/3 hover:bg-white/5 text-slate-100 px-10 py-4 rounded-xl font-semibold text-lg border border-white/10 backdrop-blur-sm transition-all cursor-pointer">
             View GitHub
           </a>
         </div>
