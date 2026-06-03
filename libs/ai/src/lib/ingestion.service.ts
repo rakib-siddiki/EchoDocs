@@ -3,7 +3,7 @@ import { EmbeddingService } from './embedding.service';
 import { ChunkingService } from './chunking.service';
 import * as fs from 'fs/promises';
 import { randomUUID } from 'crypto';
-import pdf = require('pdf-parse');
+import { PDFParse } from 'pdf-parse';
 
 export class IngestionService {
   private embeddingService: EmbeddingService;
@@ -52,8 +52,13 @@ export class IngestionService {
       const lowerType = fileType.toLowerCase();
       if (lowerType === 'pdf') {
         const dataBuffer = await fs.readFile(filePath);
-        const pdfData = await (pdf as any)(dataBuffer);
-        rawText = pdfData.text;
+        const parser = new PDFParse({ data: dataBuffer });
+        try {
+          const pdfData = await parser.getText();
+          rawText = pdfData.text;
+        } finally {
+          await parser.destroy();
+        }
       } else if (lowerType === 'md') {
         rawText = await fs.readFile(filePath, 'utf-8');
       } else {

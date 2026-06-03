@@ -2,10 +2,20 @@ import { IngestionService } from './ingestion.service';
 import { EmbeddingService } from './embedding.service';
 import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs/promises';
-import pdf = require('pdf-parse');
+import { PDFParse } from 'pdf-parse';
+
+const mockGetText = jest.fn().mockResolvedValue({ text: 'Sample text from PDF document.' });
+const mockDestroy = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('pdf-parse', () => {
-  return jest.fn().mockResolvedValue({ text: 'Sample text from PDF document.' });
+  return {
+    PDFParse: jest.fn().mockImplementation(() => {
+      return {
+        getText: mockGetText,
+        destroy: mockDestroy,
+      };
+    }),
+  };
 });
 
 describe('IngestionService', () => {
@@ -80,7 +90,9 @@ describe('IngestionService', () => {
 
     // Assert file reading
     expect(readFileSpy).toHaveBeenCalledWith('test.pdf');
-    expect(pdf).toHaveBeenCalledWith(Buffer.from('pdf data dummy'));
+    expect(PDFParse).toHaveBeenCalledWith({ data: Buffer.from('pdf data dummy') });
+    expect(mockGetText).toHaveBeenCalled();
+    expect(mockDestroy).toHaveBeenCalled();
 
     // Assert status transition at start
     expect(prismaMock.document.update).toHaveBeenNthCalledWith(1, {

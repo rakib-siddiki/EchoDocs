@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { hashPassword, verifyPassword, signJwt } from './utils';
+import { hashPassword, verifyPassword, signAccessToken, signRefreshToken, verifyRefreshToken } from './utils';
 import { ROLES, type TAuthRole } from '../constants';
 
 @Injectable()
@@ -41,8 +41,9 @@ export class AuthService {
       },
     });
 
-    // Create a JWT token for the registered user
-    const token = signJwt({ id: user.id, email: user.email, role: user.role });
+    // Create custom Access and Refresh tokens
+    const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
+    const refreshToken = signRefreshToken({ id: user.id });
 
     return {
       user: {
@@ -50,7 +51,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
       },
-      token,
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -69,7 +71,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const token = signJwt({ id: user.id, email: user.email, role: user.role });
+    const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
+    const refreshToken = signRefreshToken({ id: user.id });
 
     return {
       user: {
@@ -77,8 +80,29 @@ export class AuthService {
         email: user.email,
         role: user.role,
       },
-      token,
+      accessToken,
+      refreshToken,
     };
+  }
+
+  async refreshTokens(token: string) {
+    try {
+      const payload = verifyRefreshToken(token);
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.id },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
+      const newRefreshToken = signRefreshToken({ id: user.id });
+
+      return { accessToken, newRefreshToken };
+    } catch (err) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
   }
 
   async validateUser(userId: string) {

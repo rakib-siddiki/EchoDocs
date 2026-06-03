@@ -1,6 +1,6 @@
 'use client';
 
-import { getCookie } from '@/lib/auth-utils';
+import { getCookie, setCookie } from '@/lib/auth-utils';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
@@ -12,10 +12,46 @@ export function useHttpClient() {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 
-    const response = await fetch(`${baseUrl}${path}`, {
+    let response = await fetch(`${baseUrl}${path}`, {
       ...options,
       headers,
     });
+
+    // If access token is expired (401), try refreshing it on-demand (RTK Query / Interceptor style)
+    if (
+      response.status === 401 &&
+      path !== '/auth/login' &&
+      path !== '/auth/register' &&
+      path !== '/auth/refresh'
+    ) {
+      try {
+        const refreshResponse = await fetch(`${baseUrl}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          const newToken = data.token;
+
+          // Save the new token in cookies
+          setCookie('token', newToken, 1);
+
+          // Retry the original request with the new access token
+          const retryHeaders = {
+            ...headers,
+            Authorization: `Bearer ${newToken}`,
+          };
+
+          response = await fetch(`${baseUrl}${path}`, {
+            ...options,
+            headers: retryHeaders,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to auto-refresh token during fetch:', err);
+      }
+    }
 
     if (!response.ok) {
       let errorMessage = `Request failed with status ${response.status}`;

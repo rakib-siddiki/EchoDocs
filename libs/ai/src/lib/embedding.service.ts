@@ -20,7 +20,7 @@ export class EmbeddingService {
       throw new Error('Gemini API key is not configured');
     }
 
-    const url = `${this.baseUrl}/text-embedding-004:embedContent?key=${this.apiKey}`;
+    const url = `${this.baseUrl}/gemini-embedding-001:embedContent?key=${this.apiKey}`;
     
     const response = await fetch(url, {
       method: 'POST',
@@ -35,6 +35,7 @@ export class EmbeddingService {
             },
           ],
         },
+        outputDimensionality: 768,
       }),
     });
 

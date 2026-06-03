@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from './decorators';
-import { verifyJwt } from './utils';
+import { verifyAccessToken } from './utils';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -43,8 +43,8 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      // Validate token using custom JWT helper
-      const payload = verifyJwt(token);
+      // Validate access token using custom JWT helper
+      const payload = verifyAccessToken(token);
 
       // Attach token payload to the request object (contains id, email, role)
       request.user = payload;
