@@ -5,6 +5,13 @@ import {
   UseInterceptors,
   UseFilters,
   BadRequestException,
+  Get,
+  Query,
+  Delete,
+  Param,
+  HttpCode,
+  HttpStatus,
+
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from '../auth/decorators';
@@ -60,4 +67,23 @@ export class DocsController {
     }
     return this.docsService.uploadFile(file);
   }
+
+  @Get()
+  @Roles('admin', 'viewer')
+  async listDocuments(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 10;
+    return this.docsService.listDocuments(pageNum, limitNum);
+  }
+
+  @Delete(':id')
+  @Roles('admin')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteDocument(@Param('id') id: string) {
+    return this.docsService.deleteDocument(id);
+  }
 }
+

@@ -24,6 +24,45 @@ describe('DocsController (Integration)', () => {
           updatedAt: new Date(),
         });
       }),
+      findMany: jest.fn().mockImplementation((args) => {
+        const mockDocs = [
+          {
+            id: 'doc-1',
+            name: 'test1.pdf',
+            status: 'PROCESSED',
+            sourceUrl: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            _count: { chunks: 3 }
+          },
+          {
+            id: 'doc-2',
+            name: 'test2.md',
+            status: 'PROCESSING',
+            sourceUrl: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            _count: { chunks: 0 }
+          }
+        ];
+        return Promise.resolve(mockDocs.slice(0, args.take));
+      }),
+      findUnique: jest.fn().mockImplementation((args) => {
+        if (args.where.id === 'doc-exist') {
+          return Promise.resolve({
+            id: 'doc-exist',
+            name: 'test.pdf',
+            status: 'PROCESSED',
+            sourceUrl: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+        return Promise.resolve(null);
+      }),
+      delete: jest.fn().mockImplementation((args) => {
+        return Promise.resolve({ id: args.where.id });
+      }),
     },
   };
 
@@ -173,5 +212,77 @@ describe('DocsController (Integration)', () => {
       .attach('file', pdfBuffer, 'test.pdf');
 
     expect(response.status).toBe(HttpStatus.FORBIDDEN);
+  });
+
+  // GET /api/v1/docs tests
+  it('GET /api/v1/docs - should return 200 with list of documents for admin', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/docs')
+      .set('Authorization', 'Bearer admin-token');
+
+    expect(response.status).toBe(HttpStatus.OK);
+    expect(response.body).toBeInstanceOf(Array);
+    expect(response.body.length).toBe(2);
+    expect(response.body[0]).toHaveProperty('chunkCount', 3);
+  });
+
+  it('GET /api/v1/docs - should return 200 with list of documents for viewer', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/docs')
+      .set('Authorization', 'Bearer viewer-token');
+
+    expect(response.status).toBe(HttpStatus.OK);
+    expect(response.body).toBeInstanceOf(Array);
+  });
+
+  it('GET /api/v1/docs - should support pagination with limit', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/docs?page=1&limit=1')
+      .set('Authorization', 'Bearer admin-token');
+
+    expect(response.status).toBe(HttpStatus.OK);
+    expect(response.body.length).toBe(1);
+  });
+
+  it('GET /api/v1/docs - should return 401 if unauthorized', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/docs');
+
+    expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
+  });
+
+  // DELETE /api/v1/docs/:id tests
+  it('DELETE /api/v1/docs/:id - should return 204 when successfully deleted by admin', async () => {
+    const response = await request(app.getHttpServer())
+      .delete('/api/v1/docs/doc-exist')
+      .set('Authorization', 'Bearer admin-token');
+
+    expect(response.status).toBe(HttpStatus.NO_CONTENT);
+    expect(mockPrisma.document.delete).toHaveBeenCalledWith({
+      where: { id: 'doc-exist' }
+    });
+  });
+
+  it('DELETE /api/v1/docs/:id - should return 403 Forbidden for viewer', async () => {
+    const response = await request(app.getHttpServer())
+      .delete('/api/v1/docs/doc-exist')
+      .set('Authorization', 'Bearer viewer-token');
+
+    expect(response.status).toBe(HttpStatus.FORBIDDEN);
+  });
+
+  it('DELETE /api/v1/docs/:id - should return 404 NotFound if document does not exist', async () => {
+    const response = await request(app.getHttpServer())
+      .delete('/api/v1/docs/non-existent-id')
+      .set('Authorization', 'Bearer admin-token');
+
+    expect(response.status).toBe(HttpStatus.NOT_FOUND);
+  });
+
+  it('DELETE /api/v1/docs/:id - should return 401 if unauthorized', async () => {
+    const response = await request(app.getHttpServer())
+      .delete('/api/v1/docs/doc-exist');
+
+    expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
   });
 });

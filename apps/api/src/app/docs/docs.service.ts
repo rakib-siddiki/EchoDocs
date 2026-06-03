@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { QueueService } from '../queue/queue.service';
 import { extname } from 'path';
@@ -47,4 +47,54 @@ export class DocsService {
       status: 'PENDING',
     };
   }
+
+  /**
+   * Returns a paginated list of documents.
+   * Supports page and limit query params.
+   */
+  async listDocuments(page = 1, limit = 10) {
+    const pageNum = Math.max(1, page);
+    const limitNum = Math.max(1, limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const documents = await this.prisma.document.findMany({
+      skip,
+      take: limitNum,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { chunks: true },
+        },
+      },
+    });
+
+    return documents.map((doc) => ({
+      id: doc.id,
+      name: doc.name,
+      status: doc.status,
+      sourceUrl: doc.sourceUrl,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+      chunkCount: doc._count.chunks,
+    }));
+  }
+
+  /**
+   * Deletes a document by ID.
+   * Chunks are deleted cascade style.
+   */
+  async deleteDocument(id: string): Promise<void> {
+    const document = await this.prisma.document.findUnique({
+      where: { id },
+    });
+
+    if (!document) {
+      throw new NotFoundException(`Document with ID ${id} not found`);
+    }
+
+    await this.prisma.document.delete({
+      where: { id },
+    });
+  }
 }
+
