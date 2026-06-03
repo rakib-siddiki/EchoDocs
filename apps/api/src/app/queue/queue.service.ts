@@ -6,9 +6,10 @@ import Redis from 'ioredis';
 export class QueueService implements OnModuleDestroy {
   private readonly redisConnection: Redis;
   private readonly ingestionQueue: Queue;
-
   constructor() {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    const attempts = parseInt(process.env.JOB_RETRIES || '3', 10);
+    const backoffDelay = parseInt(process.env.JOB_BACKOFF_DELAY || '1000', 10);
 
     // BullMQ requires maxRetriesPerRequest to be null
     this.redisConnection = new Redis(redisUrl, {
@@ -17,6 +18,13 @@ export class QueueService implements OnModuleDestroy {
 
     this.ingestionQueue = new Queue('ingestion', {
       connection: this.redisConnection,
+      defaultJobOptions: {
+        attempts,
+        backoff: {
+          type: 'exponential',
+          delay: backoffDelay,
+        },
+      },
     });
   }
 
