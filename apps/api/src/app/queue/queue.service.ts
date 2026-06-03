@@ -1,6 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import Redis from 'ioredis';
+import { QUEUE_CONFIG } from '../constants';
 
 @Injectable()
 export class QueueService implements OnModuleDestroy {
@@ -16,7 +17,7 @@ export class QueueService implements OnModuleDestroy {
       maxRetriesPerRequest: null,
     });
 
-    this.ingestionQueue = new Queue('ingestion', {
+    this.ingestionQueue = new Queue(QUEUE_CONFIG.NAME, {
       connection: this.redisConnection,
       defaultJobOptions: {
         attempts,
@@ -31,14 +32,16 @@ export class QueueService implements OnModuleDestroy {
   async enqueueIngestionJob(
     documentId: string,
     filePath: string,
-    fileType: string
+    fileType: string,
   ): Promise<any> {
-    return this.ingestionQueue.add('process', {
+    return this.ingestionQueue.add(QUEUE_CONFIG.JOB_NAME, {
       documentId,
       filePath,
       fileType,
     });
   }
+
+
 
   // Helper method for testing or checking queue/job status
   getQueue(): Queue {

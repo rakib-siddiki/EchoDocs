@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { IngestionService, EmbeddingService } from '@echodocs/ai';
 import { IngestionProcessor } from './app/ingestion.processor';
+import { QUEUE_CONFIG, WORKER_CONFIG } from './app/constants';
 import { Worker } from 'bullmq';
 import Redis from 'ioredis';
 
@@ -11,7 +12,7 @@ async function bootstrap() {
   const prisma = new PrismaClient();
   await prisma.$connect();
 
-  const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+  const redisUrl = process.env.REDIS_URL || WORKER_CONFIG.DEFAULT_REDIS_URL;
   const redisConnection = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
   });
@@ -22,14 +23,15 @@ async function bootstrap() {
   const ingestionService = new IngestionService(prisma, embeddingService);
   const ingestionProcessor = new IngestionProcessor(ingestionService);
 
-  const concurrency = parseInt(process.env.CONCURRENCY || '3', 10);
+  const concurrency = parseInt(process.env.CONCURRENCY || String(WORKER_CONFIG.DEFAULT_CONCURRENCY), 10);
 
   // Initialize BullMQ Worker
   const worker = new Worker(
-    'ingestion',
+    QUEUE_CONFIG.NAME,
     async (job) => {
       await ingestionProcessor.process(job);
     },
+
     {
       connection: redisConnection,
       concurrency,

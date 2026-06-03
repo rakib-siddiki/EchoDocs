@@ -20,20 +20,22 @@ import { MulterExceptionFilter } from './multer-exception.filter';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { DOCS_CONFIG, ROLES } from '../constants';
+
 
 // Configure multer options
-const uploadDir = join(process.cwd(), 'tmp/uploads');
+const uploadDir = join(process.cwd(), DOCS_CONFIG.UPLOAD_DESTINATION);
 if (!existsSync(uploadDir)) {
   mkdirSync(uploadDir, { recursive: true });
 }
 
 export const multerOptions = {
   limits: {
-    fileSize: 20 * 1024 * 1024, // 20 MB limit
+    fileSize: DOCS_CONFIG.MAX_FILE_SIZE,
   },
   fileFilter: (req: any, file: Express.Multer.File, callback: any) => {
     const ext = extname(file.originalname).toLowerCase();
-    if (ext !== '.pdf' && ext !== '.md') {
+    if (!(DOCS_CONFIG.SUPPORTED_FILE_EXTENSIONS as readonly string[]).includes(ext)) {
       return callback(
         new BadRequestException('Only PDF and Markdown files are supported'),
         false
@@ -59,7 +61,7 @@ export class DocsController {
   constructor(private readonly docsService: DocsService) {}
 
   @Post('upload')
-  @Roles('admin')
+  @Roles(ROLES.ADMIN)
   @UseInterceptors(FileInterceptor('file', multerOptions))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
@@ -69,7 +71,7 @@ export class DocsController {
   }
 
   @Get()
-  @Roles('admin', 'viewer')
+  @Roles(ROLES.ADMIN, ROLES.VIEWER)
   async listDocuments(
     @Query('page') page?: string,
     @Query('limit') limit?: string
@@ -80,7 +82,7 @@ export class DocsController {
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles(ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteDocument(@Param('id') id: string) {
     return this.docsService.deleteDocument(id);

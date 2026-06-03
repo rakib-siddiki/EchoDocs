@@ -1,12 +1,13 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { ROUTES } from '../constants';
 
 export default async function Index() {
   const { userId } = await auth();
 
   if (userId) {
-    redirect('/dashboard');
+    redirect(ROUTES.DASHBOARD);
   }
 
   return (
@@ -39,7 +40,7 @@ export default async function Index() {
           <Link href="/sign-in" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl font-semibold text-lg shadow-[0_10px_25px_-5px_rgba(168,85,247,0.4)] transition-all cursor-pointer border-none">
             Get Started
           </Link>
-          <a href="https://github.com/rakib-siddiki/EchoDocs" target="_blank" rel="noopener noreferrer" className="bg-white/3 hover:bg-white/5 text-slate-100 px-10 py-4 rounded-xl font-semibold text-lg border border-white/10 backdrop-blur-sm transition-all cursor-pointer">
+          <a href={ROUTES.GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer" className="bg-white/3 hover:bg-white/5 text-slate-100 px-10 py-4 rounded-xl font-semibold text-lg border border-white/10 backdrop-blur-sm transition-all cursor-pointer">
             View GitHub
           </a>
         </div>

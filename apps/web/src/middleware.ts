@@ -1,6 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { AUTH_CONFIG } from './constants';
 
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/chat(.*)']);
+// Workaround for TypeScript error with readonly arrays
+const protectedRoutes = AUTH_CONFIG.PROTECTED_ROUTES as unknown as string[];
+const isProtectedRoute = createRouteMatcher(protectedRoutes);
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
