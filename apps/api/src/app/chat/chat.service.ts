@@ -3,6 +3,31 @@ import { EmbeddingService, VectorSearchService, PromptBuilder } from '@echodocs/
 import { Chunk } from '@echodocs/types';
 import { GeminiService } from './gemini.service';
 
+export interface ChatStreamTokenEvent {
+  type: 'token';
+  content: string;
+}
+
+export interface ChatStreamCitationsEvent {
+  type: 'citations';
+  citations: unknown[];
+}
+
+export interface ChatStreamDoneEvent {
+  type: 'done';
+}
+
+export interface ChatStreamErrorEvent {
+  type: 'error';
+  message: string;
+}
+
+export type ChatStreamEvent =
+  | ChatStreamTokenEvent
+  | ChatStreamCitationsEvent
+  | ChatStreamDoneEvent
+  | ChatStreamErrorEvent;
+
 interface ChunkWithDistance extends Chunk {
   distance?: number;
 }
@@ -18,7 +43,7 @@ export class ChatService {
     private readonly geminiService: GeminiService
   ) {}
 
-  async *queryStream(query: string): AsyncGenerator<unknown, void, unknown> {
+  async *queryStream(query: string): AsyncGenerator<ChatStreamEvent, void, unknown> {
     if (!query || query.trim() === '') {
       throw new Error('Query cannot be empty');
     }

@@ -1,5 +1,5 @@
 import { Controller, Post, Body, UsePipes, ValidationPipe, HttpCode, HttpStatus, Res } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ChatService } from './chat.service';
 import { ChatQueryDto } from './dto/chat-query.dto';
 import { Roles } from '../auth/decorators';

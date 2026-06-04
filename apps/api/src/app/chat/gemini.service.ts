@@ -16,7 +16,7 @@ export class GeminiService {
       throw new Error('Gemini API key is not configured');
     }
 
-    const url = `${this.baseUrl}/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${this.apiKey}`;
+    const url = `${this.baseUrl}/gemini-3.5-flash:streamGenerateContent?alt=sse&key=${this.apiKey}`;
     
     try {
       const response = await fetch(url, {

@@ -319,7 +319,7 @@ export default function ChatContainer() {
             </button>
           </form>
           <div className="flex justify-between items-center text-[10px] text-slate-500 mt-2 px-2">
-            <span>Powered by Gemini 1.5 Flash</span>
+            <span>Powered by Gemini 3.5 Flash</span>
             <span>Shift + Enter for new line</span>
           </div>
         </div>

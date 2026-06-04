@@ -27,14 +27,14 @@ Upgrade the chat system to stream AI responses token-by-token using Server-Sent 
 
 ## Acceptance criteria
 
-- [ ] `POST /api/v1/chat/query/stream` returns `Content-Type: text/event-stream`
-- [ ] Tokens arrive progressively — response does not wait for full completion before the first token is sent
-- [ ] `citations` event is received after all tokens and contains the same citations as the non-streaming endpoint
-- [ ] `done` event closes the stream cleanly
-- [ ] Chat UI renders tokens progressively as they arrive; no flash/flicker on append
-- [ ] If the stream errors mid-way, an inline error message appears in the chat thread
-- [ ] Non-streaming endpoint (`POST /api/v1/chat/query`) remains functional and unmodified
-- [ ] Integration test: call the streaming endpoint, collect all SSE events, assert token + citation + done events are all received
+- [x] `POST /api/v1/chat/query/stream` returns `Content-Type: text/event-stream`
+- [x] Tokens arrive progressively — response does not wait for full completion before the first token is sent
+- [x] `citations` event is received after all tokens and contains the same citations as the non-streaming endpoint
+- [x] `done` event closes the stream cleanly
+- [x] Chat UI renders tokens progressively as they arrive; no flash/flicker on append
+- [x] If the stream errors mid-way, an inline error message appears in the chat thread
+- [x] Non-streaming endpoint (`POST /api/v1/chat/query`) remains functional and unmodified
+- [x] Integration test: call the streaming endpoint, collect all SSE events, assert token + citation + done events are all received
 
 ## Blocked by
 
