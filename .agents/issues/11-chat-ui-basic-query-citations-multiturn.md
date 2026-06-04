@@ -27,18 +27,19 @@ Build the chat interface in `apps/web` at `/chat`. Users type a natural-language
 
 ## Acceptance criteria
 
-- [ ] User can type a question and receive an answer displayed in the chat thread
-- [ ] Each AI message shows a collapsible "Sources" section with at least the document name
-- [ ] "Copy" button copies the AI answer to clipboard and shows a transient "Copied!" confirmation
-- [ ] While a query is in-flight, a typing indicator is visible and the send button is disabled
-- [ ] "Not found" answers are rendered with a distinct visual style (e.g., muted colour, info icon)
-- [ ] Multiple questions can be asked in sequence; all messages remain visible in the thread
-- [ ] Unauthenticated users visiting `/chat` are redirected to `/sign-in`
-- [ ] Component tests (RTL + MSW): submit question → assert answer appears; assert citation renders; assert copy button works
+- [x] User can type a question and receive an answer displayed in the chat thread
+- [x] Each AI message shows a collapsible "Sources" section with at least the document name
+- [x] "Copy" button copies the AI answer to clipboard and shows a transient "Copied!" confirmation
+- [x] While a query is in-flight, a typing indicator is visible and the send button is disabled
+- [x] "Not found" answers are rendered with a distinct visual style (e.g., muted colour, info icon)
+- [x] Multiple questions can be asked in sequence; all messages remain visible in the thread
+- [x] Unauthenticated users visiting `/chat` are redirected to `/sign-in`
+- [x] Component tests (RTL + MSW): submit question → assert answer appears; assert citation renders; assert copy button works (Skipped per user instructions)
 
 ## Blocked by
 
 - `10-chat-module-rag-query-api.md`
 
 ## Status
-Pending
+Completed
+

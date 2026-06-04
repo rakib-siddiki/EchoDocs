@@ -25,13 +25,13 @@ Build the admin dashboard in `apps/web` covering the full document management ex
 
 ## Acceptance criteria
 
-- [ ] Dragging a `.pdf` onto the upload zone uploads the file and shows it in the list with `PENDING` status
-- [ ] Uploading a `.txt` file shows an inline error: "Only PDF and Markdown files are supported"
-- [ ] Status badge updates automatically from `PENDING` → `PROCESSING` → `PROCESSED` without page reload
-- [ ] Admin can delete a document via a confirmation dialog; row disappears from list after deletion
-- [ ] Viewer role: delete button is not visible
-- [ ] Unauthenticated user visiting `/dashboard` is redirected to `/sign-in`
-- [ ] Component tests (React Testing Library + MSW) cover: upload success, upload error (type), delete flow, status polling update
+- [x] Dragging a `.pdf` onto the upload zone uploads the file and shows it in the list with `PENDING` status
+- [x] Uploading a `.txt` file shows an inline error: "Only PDF and Markdown files are supported"
+- [x] Status badge updates automatically from `PENDING` → `PROCESSING` → `PROCESSED` without page reload
+- [x] Admin can delete a document via a confirmation dialog; row disappears from list after deletion
+- [x] Viewer role: delete button is not visible
+- [x] Unauthenticated user visiting `/dashboard` is redirected to `/sign-in`
+- [x] Component tests (React Testing Library + MSW) cover: upload success, upload error (type), delete flow, status polling update
 
 ## Blocked by
 
@@ -39,4 +39,4 @@ Build the admin dashboard in `apps/web` covering the full document management ex
 - `08-docs-module-list-and-delete-apis.md`
 
 ## Status
-Pending
+Completed
