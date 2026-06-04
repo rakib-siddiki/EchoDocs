@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useHttpClient } from '@/hooks/useHttpClient';
+import { getCookie, setCookie } from '@/lib/auth-utils';
 
 export interface Citation {
   documentId: string;
@@ -31,26 +30,21 @@ function generateUUID() {
 }
 
 export function useChat() {
-  const api = useHttpClient();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sessionId, setSessionId] = useState<string>('');
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     // Generate UUID on mount (client-side only)
     setSessionId(generateUUID());
   }, []);
 
-  const chatMutation = useMutation({
-    mutationFn: async (query: string) => {
-      return api.post<{ answer: string; citations: Citation[] }>('/chat/query', {
-        query,
-        sessionId,
-      });
-    },
-  });
-
   const sendMessage = async (query: string) => {
     if (!query.trim()) return;
+
+    setError(null);
+    setIsPending(true);
 
     // 1. Add user message to list
     const userMessageId = generateUUID();
@@ -61,49 +55,173 @@ export function useChat() {
     };
     setMessages((prev) => [...prev, userMsg]);
 
+    // 2. Add empty placeholder AI message bubble
+    const aiMessageId = generateUUID();
+    const aiMsg: ChatMessage = {
+      id: aiMessageId,
+      sender: 'ai',
+      text: '',
+      citations: [],
+    };
+    setMessages((prev) => [...prev, aiMsg]);
+
     try {
-      // 2. Call mutation
-      const result = await chatMutation.mutateAsync(query);
+      let token = getCookie('token');
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+      const url = `${baseUrl}/chat/query/stream`;
 
-      // Check if answer contains "not found in documents" or isNotFound based on empty citations/not found keyword
-      const answerLower = result.answer.toLowerCase();
-      const isNotFound =
-        answerLower.includes('not found in documents') ||
-        answerLower.includes('cannot find the answer') ||
-        result.citations.length === 0;
+      let response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ query, sessionId }),
+      });
 
-      const aiMsg: ChatMessage = {
-        id: generateUUID(),
-        sender: 'ai',
-        text: result.answer,
-        citations: result.citations,
-        isNotFound,
-      };
+      // Handle token expiration/rotation refresh
+      if (
+        response.status === 401 &&
+        url.indexOf('/auth/login') === -1 &&
+        url.indexOf('/auth/register') === -1
+      ) {
+        try {
+          const refreshResponse = await fetch(`${baseUrl}/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include',
+          });
 
-      setMessages((prev) => [...prev, aiMsg]);
-    } catch (err: any) {
-      // Handle error by putting an error message in chat thread
-      const aiMsg: ChatMessage = {
-        id: generateUUID(),
-        sender: 'ai',
-        text: err?.message || 'Sorry, something went wrong while processing your request.',
-        citations: [],
-        isNotFound: true,
-      };
-      setMessages((prev) => [...prev, aiMsg]);
+          if (refreshResponse.ok) {
+            const data = await refreshResponse.json();
+            const newToken = data.token;
+
+            setCookie('token', newToken, 1);
+            token = newToken;
+
+            // Retry request with new token
+            response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify({ query, sessionId }),
+            });
+          }
+        } catch (refreshErr) {
+          console.error('Failed to auto-refresh token during stream fetch:', refreshErr);
+        }
+      }
+
+      if (!response.ok) {
+        let errorMessage = `Request failed with status ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (_) {
+          try {
+            const textError = await response.text();
+            errorMessage = textError || errorMessage;
+          } catch (__) {}
+        }
+        throw new Error(errorMessage);
+      }
+
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullText = '';
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          let lineEndIdx;
+          while ((lineEndIdx = buffer.indexOf('\n')) !== -1) {
+            const line = buffer.slice(0, lineEndIdx).trim();
+            buffer = buffer.slice(lineEndIdx + 1);
+
+            if (line.startsWith('data: ')) {
+              const jsonStr = line.slice(6).trim();
+              try {
+                const event = JSON.parse(jsonStr);
+
+                if (event.type === 'token') {
+                  fullText += event.content;
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === aiMessageId ? { ...msg, text: fullText } : msg
+                    )
+                  );
+                } else if (event.type === 'citations') {
+                  const hasNoCitations = event.citations.length === 0;
+                  const answerLower = fullText.toLowerCase();
+                  const isNotFound =
+                    answerLower.includes('not found in documents') ||
+                    answerLower.includes('cannot find the answer') ||
+                    hasNoCitations;
+
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === aiMessageId
+                        ? { ...msg, citations: event.citations, isNotFound }
+                        : msg
+                    )
+                  );
+                } else if (event.type === 'error') {
+                  throw new Error(event.message || 'Stream processing error');
+                }
+              } catch (e: unknown) {
+                const errorMsg = e instanceof Error ? e.message : String(e);
+                if (errorMsg.includes('Stream processing error')) {
+                  throw e;
+                }
+                console.warn('Failed to parse SSE JSON line:', jsonStr, e);
+              }
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Sorry, something went wrong while processing your request.';
+      setError(err instanceof Error ? err : new Error(String(err)));
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === aiMessageId
+            ? {
+                ...msg,
+                text: errorMessage,
+                citations: [],
+                isNotFound: true,
+              }
+            : msg
+        )
+      );
+    } finally {
+      setIsPending(false);
     }
   };
 
   const clearChat = () => {
     setMessages([]);
     setSessionId(generateUUID());
+    setError(null);
   };
 
   return {
     messages,
     sendMessage,
-    isPending: chatMutation.isPending,
-    error: chatMutation.error,
+    isPending,
+    error,
     clearChat,
     sessionId,
   };

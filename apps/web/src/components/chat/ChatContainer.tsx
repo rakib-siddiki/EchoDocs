@@ -157,6 +157,11 @@ export default function ChatContainer() {
               const hasCitations = message.citations && message.citations.length > 0;
               const isCopied = copiedId === message.id;
 
+              // Hide empty placeholder AI messages from rendering empty bubbles
+              if (!isUser && !message.text && !hasCitations && !message.isNotFound) {
+                return null;
+              }
+
               return (
                 <div
                   key={message.id}
@@ -267,7 +272,7 @@ export default function ChatContainer() {
         )}
 
         {/* Typing indicator */}
-        {isPending && (
+        {isPending && (messages.length === 0 || messages[messages.length - 1].sender !== 'ai' || !messages[messages.length - 1].text) && (
           <div className="flex justify-start w-full animate-pulse">
             <div className="flex gap-3 max-w-[85%]">
               <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-400/20 text-purple-400 shrink-0 flex items-center justify-center">

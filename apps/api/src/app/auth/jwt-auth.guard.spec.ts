@@ -67,7 +67,7 @@ describe('JwtAuthGuard', () => {
   it('should verify valid token and attach user to request', async () => {
     reflector.getAllAndOverride = jest.fn().mockReturnValue(false);
     const mockPayload = { id: 'user_123', email: 'test@example.com', role: 'viewer' };
-    (utils.verifyJwt as jest.Mock).mockReturnValue(mockPayload);
+    (utils.verifyAccessToken as jest.Mock).mockReturnValue(mockPayload);
 
     const request = {
       headers: {
@@ -89,7 +89,7 @@ describe('JwtAuthGuard', () => {
 
   it('should throw 401 if verifyJwt throws', async () => {
     reflector.getAllAndOverride = jest.fn().mockReturnValue(false);
-    (utils.verifyJwt as jest.Mock).mockImplementation(() => {
+    (utils.verifyAccessToken as jest.Mock).mockImplementation(() => {
       throw new Error('Invalid token');
     });
 

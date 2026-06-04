@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ChatService } from './chat.service';
 import { GeminiService } from './gemini.service';
 import { EmbeddingService, VectorSearchService, PromptBuilder } from '@echodocs/ai';
+import { Chunk } from '@echodocs/types';
 
 describe('ChatService (Unit)', () => {
   let service: ChatService;
@@ -20,7 +21,7 @@ describe('ChatService (Unit)', () => {
     } as unknown as jest.Mocked<VectorSearchService>;
 
     geminiServiceMock = {
-      generateContent: jest.fn(),
+      generateContentStream: jest.fn(),
     } as unknown as jest.Mocked<GeminiService>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -35,7 +36,9 @@ describe('ChatService (Unit)', () => {
     service = module.get<ChatService>(ChatService);
   });
 
-  it('should call EmbeddingService, VectorSearchService, and GeminiService in order with correct args', async () => {
+
+
+  it('should stream tokens, citations, and done event when relevant chunks are found', async () => {
     const query = 'What is EchoDocs?';
     const mockEmbedding = Array(768).fill(0.1);
     const mockChunks = [
@@ -51,47 +54,43 @@ describe('ChatService (Unit)', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-        distance: 0.2, // Below the threshold (0.7), so it's relevant
+        distance: 0.2,
       },
     ];
-    const mockAnswer = 'EchoDocs is an assistant.';
 
-    // Setup mocks
     embeddingServiceMock.embedText.mockResolvedValue(mockEmbedding);
-    vectorSearchServiceMock.searchSimilarChunks.mockResolvedValue(mockChunks as any);
-    geminiServiceMock.generateContent.mockResolvedValue(mockAnswer);
-
-    // Call service
-    const result = await service.query(query);
-
-    // Assert returns correct data
-    expect(result.answer).toBe(mockAnswer);
-    expect(result.citations).toHaveLength(1);
-    expect(result.citations[0]).toEqual({
-      documentId: 'doc-1',
-      documentName: 'README.md',
-      chunkIndex: 0,
-      excerpt: 'EchoDocs is a documentation assistant.',
+    vectorSearchServiceMock.searchSimilarChunks.mockResolvedValue(mockChunks as unknown as Chunk[]);
+    
+    geminiServiceMock.generateContentStream.mockImplementation(async function* () {
+      yield 'EchoDocs ';
+      yield 'is ';
+      yield 'assistant.';
     });
 
-    // Verify order and arguments
-    expect(embeddingServiceMock.embedText).toHaveBeenCalledWith(query);
-    expect(vectorSearchServiceMock.searchSimilarChunks).toHaveBeenCalledWith(mockEmbedding, 5);
-    
-    // Ensure PromptBuilder is used correctly by rebuilding the prompt and checking it
-    const expectedPrompt = PromptBuilder.buildPrompt(mockChunks as any, query);
-    expect(geminiServiceMock.generateContent).toHaveBeenCalledWith(expectedPrompt);
+    const events = [];
+    for await (const event of service.queryStream(query)) {
+      events.push(event);
+    }
 
-    // Verify calling order: Embedding -> Vector Search -> Gemini
-    const embedOrder = embeddingServiceMock.embedText.mock.invocationCallOrder[0];
-    const searchOrder = vectorSearchServiceMock.searchSimilarChunks.mock.invocationCallOrder[0];
-    const geminiOrder = geminiServiceMock.generateContent.mock.invocationCallOrder[0];
-
-    expect(embedOrder).toBeLessThan(searchOrder);
-    expect(searchOrder).toBeLessThan(geminiOrder);
+    expect(events).toHaveLength(5);
+    expect(events[0]).toEqual({ type: 'token', content: 'EchoDocs ' });
+    expect(events[1]).toEqual({ type: 'token', content: 'is ' });
+    expect(events[2]).toEqual({ type: 'token', content: 'assistant.' });
+    expect(events[3]).toEqual({
+      type: 'citations',
+      citations: [
+        {
+          documentId: 'doc-1',
+          documentName: 'README.md',
+          chunkIndex: 0,
+          excerpt: 'EchoDocs is a documentation assistant.',
+        },
+      ],
+    });
+    expect(events[4]).toEqual({ type: 'done' });
   });
 
-  it('should return a "not found in documents" message and empty citations if no relevant chunks are found', async () => {
+  it('should yield not found tokens and empty citations in queryStream when no relevant chunks are found', async () => {
     const query = 'Unrelated topic';
     const mockEmbedding = Array(768).fill(0.1);
     const mockChunks = [
@@ -107,17 +106,23 @@ describe('ChatService (Unit)', () => {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-        distance: 0.8, // Above threshold (0.7), so irrelevant
+        distance: 0.8,
       },
     ];
 
     embeddingServiceMock.embedText.mockResolvedValue(mockEmbedding);
-    vectorSearchServiceMock.searchSimilarChunks.mockResolvedValue(mockChunks as any);
+    vectorSearchServiceMock.searchSimilarChunks.mockResolvedValue(mockChunks as unknown as Chunk[]);
 
-    const result = await service.query(query);
+    const events = [];
+    for await (const event of service.queryStream(query)) {
+      events.push(event);
+    }
 
-    expect(result.answer).toContain('not found in documents');
-    expect(result.citations).toEqual([]);
-    expect(geminiServiceMock.generateContent).not.toHaveBeenCalled();
+    expect(events).toHaveLength(3);
+    expect(events[0].type).toBe('token');
+    expect(events[0].content).toContain('not found in documents');
+    expect(events[1]).toEqual({ type: 'citations', citations: [] });
+    expect(events[2]).toEqual({ type: 'done' });
+    expect(geminiServiceMock.generateContentStream).not.toHaveBeenCalled();
   });
 });

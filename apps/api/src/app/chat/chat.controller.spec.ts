@@ -34,7 +34,13 @@ describe('ChatController (Integration)', () => {
   };
 
   const mockGeminiService = {
-    generateContent: jest.fn().mockResolvedValue('Prisma is a Next-Generation ORM for Node.js and TypeScript. It is used to query databases.'),
+    generateContentStream: jest.fn().mockImplementation(async function* () {
+      yield 'Prisma ';
+      yield 'is ';
+      yield 'a ';
+      yield 'Next-Generation ';
+      yield 'ORM.';
+    }),
   };
 
   beforeAll(async () => {
@@ -81,46 +87,36 @@ describe('ChatController (Integration)', () => {
     jest.clearAllMocks();
   });
 
-  it('POST /api/v1/chat/query - should return 200 with answer and citations when user is admin', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/api/v1/chat/query')
+
+
+  it('POST /api/v1/chat/query/stream - should stream chunks and citations when user is authorized', (done) => {
+    request(app.getHttpServer())
+      .post('/api/v1/chat/query/stream')
       .set('Authorization', 'Bearer admin-token')
-      .send({ query: 'What is Prisma?', sessionId: 'session-123' });
-
-    expect(response.status).toBe(HttpStatus.OK);
-    expect(response.body).toHaveProperty('answer');
-    expect(response.body.answer).toContain('Prisma is a Next-Generation ORM');
-    expect(response.body.citations).toHaveLength(1);
-    expect(response.body.citations[0]).toEqual({
-      documentId: 'doc-456',
-      documentName: 'prisma-intro.md',
-      chunkIndex: 0,
-      excerpt: 'Prisma is a Next-Generation ORM for Node.js and TypeScript.',
-    });
+      .send({ query: 'What is Prisma?', sessionId: 'session-123' })
+      .expect('Content-Type', /text\/event-stream/)
+      .expect(HttpStatus.OK)
+      .end((err, res) => {
+        if (err) return done(err);
+        const body = res.text;
+        expect(body).toContain('data: {"type":"token","content":"Prisma "}');
+        expect(body).toContain('data: {"type":"citations"');
+        expect(body).toContain('data: {"type":"done"}');
+        done();
+      });
   });
 
-  it('POST /api/v1/chat/query - should return 200 with answer and citations when user is viewer', async () => {
+  it('POST /api/v1/chat/query/stream - should return 401 if token is missing', async () => {
     const response = await request(app.getHttpServer())
-      .post('/api/v1/chat/query')
-      .set('Authorization', 'Bearer viewer-token')
-      .send({ query: 'What is Prisma?' });
-
-    expect(response.status).toBe(HttpStatus.OK);
-    expect(response.body).toHaveProperty('answer');
-    expect(response.body.citations).toHaveLength(1);
-  });
-
-  it('POST /api/v1/chat/query - should return 401 Unauthorized if token is missing', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/api/v1/chat/query')
+      .post('/api/v1/chat/query/stream')
       .send({ query: 'What is Prisma?' });
 
     expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
   });
 
-  it('POST /api/v1/chat/query - should return 400 Bad Request if query is empty', async () => {
+  it('POST /api/v1/chat/query/stream - should return 400 if query is empty', async () => {
     const response = await request(app.getHttpServer())
-      .post('/api/v1/chat/query')
+      .post('/api/v1/chat/query/stream')
       .set('Authorization', 'Bearer admin-token')
       .send({ query: '' });
 

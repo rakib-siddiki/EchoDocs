@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmbeddingService, VectorSearchService, PromptBuilder } from '@echodocs/ai';
+import { Chunk } from '@echodocs/types';
 import { GeminiService } from './gemini.service';
+
+interface ChunkWithDistance extends Chunk {
+  distance?: number;
+}
 
 @Injectable()
 export class ChatService {
@@ -13,12 +18,12 @@ export class ChatService {
     private readonly geminiService: GeminiService
   ) {}
 
-  async query(query: string, sessionId?: string) {
+  async *queryStream(query: string): AsyncGenerator<unknown, void, unknown> {
     if (!query || query.trim() === '') {
       throw new Error('Query cannot be empty');
     }
 
-    this.logger.log(`Processing chat query: "${query}"`);
+    this.logger.log(`Processing streaming chat query: "${query}"`);
 
     // 1. Convert the query into a vector embedding
     const queryEmbedding = await this.embeddingService.embedText(query);
@@ -28,23 +33,8 @@ export class ChatService {
 
     // Filter by similarity threshold (distance <= threshold)
     const relevantChunks = chunks.filter(
-      (chunk: any) => chunk.distance !== undefined && chunk.distance <= this.distanceThreshold
+      (chunk: ChunkWithDistance) => chunk.distance !== undefined && chunk.distance <= this.distanceThreshold
     );
-
-    // 3. Check if we have any relevant chunks
-    if (relevantChunks.length === 0) {
-      this.logger.warn(`No relevant chunks found for query: "${query}" (closest distance: ${chunks[0]?.distance})`);
-      return {
-        answer: "I couldn't find an answer in the uploaded documents (not found in documents).",
-        citations: [],
-      };
-    }
-
-    // 4. Build prompt
-    const prompt = PromptBuilder.buildPrompt(relevantChunks, query);
-
-    // 5. Call Gemini
-    let answer = await this.geminiService.generateContent(prompt);
 
     // Map to citations
     const citations = relevantChunks.map((chunk) => ({
@@ -54,22 +44,43 @@ export class ChatService {
       excerpt: chunk.content,
     }));
 
-    // If Gemini specifies it can't find the answer, clear citations
-    const isNotFound = 
-      answer.toLowerCase().includes('cannot find the answer') ||
-      answer.toLowerCase().includes('not found');
-
-    if (isNotFound) {
-      this.logger.warn(`Gemini indicated answer not found in documents for query: "${query}"`);
-      return {
-        answer,
-        citations: [],
-      };
+    // 3. Check if we have any relevant chunks
+    if (relevantChunks.length === 0) {
+      this.logger.warn(`No relevant chunks found for query: "${query}" (closest distance: ${(chunks[0] as ChunkWithDistance)?.distance})`);
+      yield { type: 'token', content: "I couldn't find an answer in the uploaded documents (not found in documents)." };
+      yield { type: 'citations', citations: [] };
+      yield { type: 'done' };
+      return;
     }
 
-    return {
-      answer,
-      citations,
-    };
+    // 4. Build prompt
+    const prompt = PromptBuilder.buildPrompt(relevantChunks, query);
+
+    // 5. Call Gemini in streaming mode
+    let fullAnswer = '';
+    try {
+      for await (const token of this.geminiService.generateContentStream(prompt)) {
+        fullAnswer += token;
+        yield { type: 'token', content: token };
+      }
+
+      // If Gemini specifies it can't find the answer, clear citations
+      const isNotFound = 
+        fullAnswer.toLowerCase().includes('cannot find the answer') ||
+        fullAnswer.toLowerCase().includes('not found');
+
+      if (isNotFound) {
+        this.logger.warn(`Gemini indicated answer not found in documents for query: "${query}"`);
+        yield { type: 'citations', citations: [] };
+      } else {
+        yield { type: 'citations', citations };
+      }
+      
+      yield { type: 'done' };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error in streaming chat query: ${errorMessage}`);
+      yield { type: 'error', message: errorMessage || 'Error occurred during streaming' };
+    }
   }
 }

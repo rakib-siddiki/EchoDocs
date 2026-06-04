@@ -72,7 +72,7 @@ describe('DocsController (Integration)', () => {
 
   beforeAll(async () => {
     // Setup Custom Auth mock behavior
-    (authUtils.verifyJwt as jest.Mock).mockImplementation((token) => {
+    (authUtils.verifyAccessToken as jest.Mock).mockImplementation((token) => {
       if (token === 'admin-token') {
         return {
           id: 'admin_user',

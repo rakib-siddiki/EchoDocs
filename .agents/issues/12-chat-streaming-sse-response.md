@@ -41,4 +41,4 @@ Upgrade the chat system to stream AI responses token-by-token using Server-Sent 
 - `11-chat-ui-basic-query-citations-multiturn.md`
 
 ## Status
-Pending
+Completed
