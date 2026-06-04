@@ -201,7 +201,33 @@ export default function ChatContainer() {
                         )}
 
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                          {message.text}
+                          {isUser || !message.citations || message.citations.length === 0
+                            ? message.text
+                            : message.text.split(/(\[\d+\])/g).map((part, index) => {
+                                const match = part.match(/^\[(\d+)\]$/);
+                                if (match) {
+                                  const citationIndex = parseInt(match[1], 10) - 1;
+                                  const citation = message.citations?.[citationIndex];
+                                  if (citation) {
+                                    return (
+                                      <span
+                                        key={index}
+                                        onClick={() => {
+                                          setOpenCitations((prev) => ({
+                                            ...prev,
+                                            [message.id]: true,
+                                          }));
+                                        }}
+                                        className="inline-flex items-center justify-center px-1.5 py-0.5 mx-0.5 text-[9px] font-black bg-sky-500/20 hover:bg-sky-500/35 border border-sky-400/30 text-sky-300 rounded-md cursor-pointer transition-all hover:scale-105 select-none align-super font-mono"
+                                        title={`Source ${citationIndex + 1}: ${citation.documentName}`}
+                                      >
+                                        {citationIndex + 1}
+                                      </span>
+                                    );
+                                  }
+                                }
+                                return part;
+                              })}
                         </p>
 
                         {/* Copy / Actions Bar */}

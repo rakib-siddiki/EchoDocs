@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EmbeddingService, VectorSearchService, PromptBuilder } from '@echodocs/ai';
+import { EmbeddingService, VectorSearchService, PromptBuilder, getSystemRelevantChunks } from '@echodocs/ai';
 import { Chunk } from '@echodocs/types';
 import { GeminiService } from './gemini.service';
 
@@ -53,11 +53,17 @@ export class ChatService {
     // 1. Convert the query into a vector embedding
     const queryEmbedding = await this.embeddingService.embedText(query);
 
-    // 2. Retrieve top-5 most similar chunks
-    const chunks = await this.vectorSearchService.searchSimilarChunks(queryEmbedding, 5);
+    // 2. Retrieve top-5 most similar chunks from database
+    const dbChunks = await this.vectorSearchService.searchSimilarChunks(queryEmbedding, 5);
+
+    // Retrieve matching system FAQ chunks
+    const systemChunks = getSystemRelevantChunks(query);
+
+    // Combine both sets of chunks
+    const combinedChunks = [...systemChunks, ...dbChunks];
 
     // Filter by similarity threshold (distance <= threshold)
-    const relevantChunks = chunks.filter(
+    const relevantChunks = combinedChunks.filter(
       (chunk: ChunkWithDistance) => chunk.distance !== undefined && chunk.distance <= this.distanceThreshold
     );
 
@@ -71,7 +77,7 @@ export class ChatService {
 
     // 3. Check if we have any relevant chunks
     if (relevantChunks.length === 0) {
-      this.logger.warn(`No relevant chunks found for query: "${query}" (closest distance: ${(chunks[0] as ChunkWithDistance)?.distance})`);
+      this.logger.warn(`No relevant chunks found for query: "${query}" (closest distance: ${(dbChunks[0] as ChunkWithDistance)?.distance})`);
       yield { type: 'token', content: "I couldn't find an answer in the uploaded documents (not found in documents)." };
       yield { type: 'citations', citations: [] };
       yield { type: 'done' };
