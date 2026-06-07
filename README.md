@@ -1,96 +1,191 @@
-# Workspace
+# EchoDocs 🚀
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+An Enterprise-grade Retrieval-Augmented Generation (RAG) Knowledge Engine built on an **Nx Monorepo** architecture. EchoDocs enables users to upload PDF and Markdown documents, automatically ingest and vectorize them using Google's high-dimensional embedding models, and chat with their documents in real-time with grounded citation footnotes.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+---
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## 🛠️ Stack & Technologies
 
-## Run tasks
+- **Frontend**: Next.js 16 (App Router), React 19, TailwindCSS, Lucide Icons, Glassmorphic Premium Design
+- **API Server**: NestJS (v11), Express, custom JWT-based authentication
+- **Background Worker**: NestJS Node worker powered by BullMQ & Redis
+- **Database / ORM**: PostgreSQL with `pgvector` extension & Prisma ORM
+- **AI/LLM Integrations**: 
+  - Google Gemini API `gemini-embedding-001` (768-dimensional embeddings)
+  - Google Gemini API `gemini-3.5-flash` (Streaming SSE content generation)
 
-To run tasks with Nx use:
+---
 
-```sh
-npx nx <target> <project-name>
+## ⚡ Core Features
+
+- **Asynchronous Processing**: Files are processed in the background. Uploaded documents immediately transition to a `PENDING` queue, allowing users to track progress through `PROCESSING`, `PROCESSED`, or `FAILED` states.
+- **Overlapping Content Chunking**: Text extracts are parsed and sliced into ~1000-character segments with overlapping text to prevent semantic context loss at boundaries.
+- **Semantic Similarity Search**: Queries are vectorized on the fly and compared to document chunks using PostgreSQL's cosine distance operator (`<=>`).
+- **Grounded Citation-Backed Answers**: AI answers are strictly limited to the contexts retrieved. All answers feature interactive numbered citations highlighting matching sections and documents.
+- **System FAQs Overrides**: Pre-compiled FAQ handlers match user queries against system instructions, ensuring instant system help answers.
+
+---
+
+## 🔄 RAG Sequence Flow
+
+The following diagram outlines the path of document ingestion and semantic chat queries in EchoDocs:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User Interface (Web)
+    participant API as NestJS Web API (api)
+    participant Redis as Redis (BullMQ Queue)
+    participant Worker as Background Worker (worker)
+    participant Gemini as Gemini API (Google)
+    participant DB as PostgreSQL (pgvector)
+
+    Note over User, API: 1. Document Upload & Ingestion
+    User->>API: Upload Document (.pdf / .md)
+    API->>DB: Save Document Status: PENDING
+    API->>Redis: Enqueue Ingestion Job (Doc ID)
+    API-->>User: Return status: PENDING
+    
+    Redis->>Worker: Pull Ingestion Job
+    Worker->>DB: Update Status: PROCESSING
+    Worker->>Worker: Parse Text (pdf-parse / fs)
+    Worker->>Worker: Chunk Text into 1000-char segments
+    loop For each chunk
+        Worker->>Gemini: Request Embedding (gemini-embedding-001)
+        Gemini-->>Worker: Return 768-dim Vector
+    end
+    Worker->>DB: Insert Chunks & Vector Embeddings (Transaction)
+    Worker->>DB: Update Status: PROCESSED
+
+    Note over User, API: 2. Semantic Chat Query
+    User->>API: Submit Question / Chat Prompt
+    API->>Gemini: Request Query Embedding
+    Gemini-->>API: Return Query Vector
+    API->>DB: Vector cosine distance search (<=>)
+    DB-->>API: Return Top 5 closest chunks
+    API->>API: Filter similarity & combine with System FAQ
+    API->>API: Construct prompt with Grounding context
+    API->>Gemini: Stream chat response (gemini-3.5-flash)
+    Gemini-->>API: Stream answer tokens (SSE)
+    API-->>User: Stream SSE: Tokens + Citations
 ```
 
-For example:
+---
 
-```sh
-npx nx build myproject
+## 📁 Monorepo Folder Structure
+
+EchoDocs is organized as a clean Nx workspace with separate app boundaries and shared libraries:
+
+```text
+EchoDocs/
+├── apps/
+│   ├── web/                     # Next.js Frontend Application
+│   │   ├── src/app/             # Pages, private (dashboard/chat) and public routes
+│   │   └── src/components/      # UI components (chat, dashboard, landing, layout)
+│   ├── api/                     # NestJS Core Web API Server
+│   │   ├── src/app/auth         # Custom email/password JWT-based auth
+│   │   ├── src/app/docs         # Document upload, listing, and deletion
+│   │   └── src/app/chat         # Citation grounded AI answering & Gemini streaming
+│   └── worker/                  # NestJS Ingestion Background Worker
+│       └── src/app/             # BullMQ consumer that parses and embed files
+├── libs/
+│   ├── ai/                      # Shared AI logic (embeddings, vector search, chunking)
+│   ├── types/                   # Shared TypeScript models and type definitions
+│   ├── ui/                      # Shared reusable UI elements
+│   └── utils/                   # Shared utilities and configurations
+├── docker-compose.yml           # Local dev services (PostgreSQL + pgvector, Redis)
+├── package.json                 # Core dependencies
+└── tsconfig.base.json           # Global TypeScript settings
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+---
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 🚀 Getting Started
 
-## Add new projects
+### 1. Prerequisites
+Verify you have the following installed:
+- **Node.js** (v20+) or **Bun**
+- **pnpm** (preferred package manager)
+- **Docker & Docker Compose**
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
-```sh
-npx nx add @nx/react
+### 2. Installation
+Clone this repository and install the workspace dependencies:
+```bash
+git clone https://github.com/rakib-siddiki/EchoDocs.git
+cd EchoDocs
+pnpm install
 ```
 
-Use the plugin's generator to create new projects. For example, to create a new React app or library:
+### 3. Spin up Infrastructure
+Run local databases and Redis instances:
+```bash
+docker-compose up -d
+```
+This starts:
+- **PostgreSQL** (with `pgvector` enabled) on port `5433` (maps to internal 5432)
+- **Redis** on port `6379` (used for BullMQ job queue)
 
-```sh
-# Generate an app
-npx nx g @nx/react:app demo
+### 4. Configuration
+Create a `.env` file at the root of the project:
+```bash
+cp .env.example .env
+```
+Provide the required keys:
+- `DATABASE_URL`: `postgresql://postgres:postgres@localhost:5433/echodocs?schema=public`
+- `DIRECT_URL`: `postgresql://postgres:postgres@localhost:5433/echodocs?schema=public`
+- `REDIS_URL`: `redis://localhost:6379`
+- `GEMINI_API_KEY`: *Your Google Gemini API Key*
 
-# Generate a library
-npx nx g @nx/react:lib some-lib
+### 5. DB Migration & Seeding
+Prepare the Postgres database structures and seed default roles:
+```bash
+# Push Prisma migrations
+npx prisma migrate dev --schema=apps/api/prisma/schema.prisma
+
+# Run the database seed
+pnpm prisma db seed
+```
+> [!TIP]
+> The seed command initializes a default admin account:
+> - **Email**: `admin@echodocs.com`
+> - **Password**: `admin123`
+
+### 6. Development Server
+Run the frontend web app, the backend API, and the BullMQ worker concurrently:
+```bash
+pnpm dev
+# or using bun
+bun dev
+```
+- **Web App**: [http://localhost:3000](http://localhost:3000)
+- **API Server**: [http://localhost:5000](http://localhost:5000)
+
+---
+
+## 💻 Nx Workspace Commands
+
+Manage and run tasks across projects in the workspace:
+
+### Run Individual Apps
+- **Web App**: `npx nx dev web`
+- **API Server**: `npx nx serve api`
+- **Worker**: `npx nx serve worker`
+
+### Quality Assurance & Building
+- **Build Workspace**: `npx nx run-many -t build`
+- **Run All Tests**: `npx nx run-many -t test`
+- **Lint Code**: `npx nx run-many -t lint`
+
+### Project Dependency Graph
+To visualize the connections and boundaries between apps and libraries:
+```bash
+npx nx graph
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+---
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 🔒 Security & Resiliency
 
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- **Transactional Vector Upserts**: To maintain idempotency, the `IngestionService` runs chunk deletions and batch pgvector insertions within a single database transaction.
+- **Isolated Embedding Generation**: Chunks are embedded individually outside the transaction block to avoid database connection pool locking during remote API network latency.
+- **Strict Input Validation**: NestJS uses class-validator DTOs, file size limits (20MB), and file extension checks (`.pdf`, `.md`) to lock down endpoints.
