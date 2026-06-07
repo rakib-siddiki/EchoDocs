@@ -97,7 +97,10 @@ export default function SignInPage() {
         <div className="mt-8 text-center">
           <p className="text-sm text-slate-400">
             Don't have an account?{' '}
-            <Link href="/sign-up" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
+            <Link
+              href="/sign-up"
+              className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+            >
               Sign Up
             </Link>
           </p>
@@ -111,21 +114,18 @@ export default function SignInPage() {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => handleFillCredentials('admin@echodocs.com', 'admin123')}
+              onClick={() =>
+                handleFillCredentials('admin@echodocs.com', 'admin123')
+              }
               className="text-left bg-slate-950/40 hover:bg-slate-950 border border-white/5 hover:border-white/10 rounded-xl p-3 transition-all cursor-pointer group"
             >
-              <div className="text-xs font-bold text-sky-400 group-hover:text-sky-300">Admin Account</div>
-              <div className="text-[10px] text-slate-500">admin@echodocs.com</div>
+              <div className="text-xs font-bold text-sky-400 group-hover:text-sky-300">
+                Admin Account
+              </div>
+              <div className="text-[10px] text-slate-500">
+                admin@echodocs.com
+              </div>
               <div className="text-[10px] text-slate-500">Pass: admin123</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFillCredentials('viewer@echodocs.com', 'viewer123')}
-              className="text-left bg-slate-950/40 hover:bg-slate-950 border border-white/5 hover:border-white/10 rounded-xl p-3 transition-all cursor-pointer group"
-            >
-              <div className="text-xs font-bold text-purple-400 group-hover:text-purple-300">Viewer Account</div>
-              <div className="text-[10px] text-slate-500">viewer@echodocs.com</div>
-              <div className="text-[10px] text-slate-500">Pass: viewer123</div>
             </button>
           </div>
         </div>
