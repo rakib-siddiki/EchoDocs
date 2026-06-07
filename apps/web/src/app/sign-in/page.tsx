@@ -6,8 +6,8 @@ import Link from 'next/link';
 
 export default function SignInPage() {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@echodocs.com');
+  const [password, setPassword] = useState('admin123');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,10 +25,6 @@ export default function SignInPage() {
     }
   };
 
-  const handleFillCredentials = (emailVal: string, passVal: string) => {
-    setEmail(emailVal);
-    setPassword(passVal);
-  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 font-sans text-slate-100 p-8 relative overflow-hidden">
@@ -106,29 +102,6 @@ export default function SignInPage() {
           </p>
         </div>
 
-        {/* Demo Credentials Helper Box */}
-        <div className="mt-8 border-t border-white/5 pt-6 flex flex-col gap-3">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            Quick Demo Accounts
-          </span>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() =>
-                handleFillCredentials('admin@echodocs.com', 'admin123')
-              }
-              className="text-left bg-slate-950/40 hover:bg-slate-950 border border-white/5 hover:border-white/10 rounded-xl p-3 transition-all cursor-pointer group"
-            >
-              <div className="text-xs font-bold text-sky-400 group-hover:text-sky-300">
-                Admin Account
-              </div>
-              <div className="text-[10px] text-slate-500">
-                admin@echodocs.com
-              </div>
-              <div className="text-[10px] text-slate-500">Pass: admin123</div>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

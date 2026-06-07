@@ -28,12 +28,12 @@ export function DeleteConfirmDialog({
       />
 
       {/* Modal Content */}
-      <div className="relative bg-slate-900 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl z-10 transition-all transform scale-100">
+      <div className="relative bg-slate-900/90 border border-white/10 rounded-2xl max-w-md w-full p-6 shadow-2xl z-10 transition-all transform scale-100 backdrop-blur-lg">
         <div className="flex items-start gap-4 mb-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0">
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 shrink-0 animate-pulse">
             <svg
               className="w-5 h-5"
-              fill="none;;"
+              fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
@@ -50,7 +50,7 @@ export function DeleteConfirmDialog({
             <h3 className="text-lg font-bold text-slate-100">
               Delete Document
             </h3>
-            <p className="text-sm text-slate-400 mt-1 leading-relaxed">
+            <p className="text-sm text-slate-400 mt-1 leading-relaxed font-light">
               Are you sure you want to delete <span className="text-slate-200 font-semibold">{documentName}</span>? 
               This action is permanent and will cascade to delete all associated vector chunks.
             </p>
@@ -62,7 +62,7 @@ export function DeleteConfirmDialog({
             type="button"
             disabled={isDeleting}
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-semibold bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-all disabled:opacity-50"
+            className="px-4 py-2 text-sm font-semibold bg-white/5 border border-white/10 hover:border-white/20 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition-all disabled:opacity-50 cursor-pointer"
           >
             Cancel
           </button>
@@ -70,7 +70,7 @@ export function DeleteConfirmDialog({
             type="button"
             disabled={isDeleting}
             onClick={onConfirm}
-            className="px-4 py-2 text-sm font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-xl shadow-[0_5px_15px_-3px_rgba(225,29,72,0.4)] transition-all disabled:opacity-50 flex items-center gap-1.5"
+            className="px-4 py-2 text-sm font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-xl shadow-[0_5px_15px_-3px_rgba(225,29,72,0.4)] transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer hover:scale-102"
           >
             {isDeleting ? (
               <>
