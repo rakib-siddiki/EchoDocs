@@ -2,13 +2,11 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { AUTH_ROLES, type TAuthRole } from '@/constants';
 import { getCookie, setCookie, deleteCookie } from '@/lib/auth-utils';
 
 export interface User {
   id: string;
   email: string;
-  role: TAuthRole;
 }
 
 interface AuthContextType {
@@ -19,7 +17,6 @@ interface AuthContextType {
   register: (
     email: string,
     password: string,
-    role?: TAuthRole,
   ) => Promise<void>;
   logout: () => void;
 }
@@ -153,14 +150,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/dashboard');
   };
 
-  const register = async (email: string, password: string, role: TAuthRole = AUTH_ROLES.VIEWER) => {
+  const register = async (email: string, password: string) => {
     const response = await fetch(`${baseUrl}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include', // Necessary to receive Set-Cookie for HttpOnly refresh_token
-      body: JSON.stringify({ email, password, role }),
+      body: JSON.stringify({ email, password }),
     });
 
     const data = await response.json();

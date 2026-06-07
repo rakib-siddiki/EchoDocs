@@ -3,13 +3,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Link from 'next/link';
-import { AUTH_ROLES, type TAuthRole } from '@/constants';
+
 
 export default function SignUpPage() {
   const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<TAuthRole>(AUTH_ROLES.VIEWER);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,7 +18,7 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      await register(email, password, role);
+      await register(email, password);
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -82,40 +81,7 @@ export default function SignUpPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Select Role
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole('viewer')}
-                className={`py-3 rounded-xl border text-sm font-bold transition-all cursor-pointer ${
-                  role === 'viewer'
-                    ? 'bg-purple-600/25 border-purple-500 text-purple-400 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]'
-                    : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Viewer
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('admin')}
-                className={`py-3 rounded-xl border text-sm font-bold transition-all cursor-pointer ${
-                  role === 'admin'
-                    ? 'bg-sky-600/25 border-sky-500 text-sky-400 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]'
-                    : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Admin
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-500 mt-1">
-              {role === 'admin'
-                ? 'Admins can view, upload, and delete documents.'
-                : 'Viewers can view documents but cannot upload or delete them.'}
-            </p>
-          </div>
+
 
           <button
             type="submit"

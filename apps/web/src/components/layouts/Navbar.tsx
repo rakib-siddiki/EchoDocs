@@ -78,13 +78,6 @@ export function Navbar() {
           <div className="flex items-center gap-3 bg-slate-900/40 border border-white/10 rounded-xl px-4 py-2">
             <div className="flex flex-col items-end">
               <span className="text-xs font-bold text-slate-200">{user.email}</span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-extrabold uppercase tracking-wide ${
-                user.role === 'admin' 
-                  ? 'bg-sky-400/10 text-sky-400 border border-sky-400/20' 
-                  : 'bg-purple-400/10 text-purple-400 border border-purple-400/20'
-              }`}>
-                {user.role}
-              </span>
             </div>
             <button
               onClick={logout}

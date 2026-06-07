@@ -77,14 +77,12 @@ describe('DocsController (Integration)', () => {
         return {
           id: 'admin_user',
           email: 'admin@echodocs.com',
-          role: 'admin',
         };
       }
       if (token === 'viewer-token') {
         return {
           id: 'viewer_user',
           email: 'viewer@echodocs.com',
-          role: 'viewer',
         };
       }
       throw new Error('Invalid token');
@@ -203,16 +201,7 @@ describe('DocsController (Integration)', () => {
     expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
   });
 
-  it('POST /api/v1/docs/upload - should return 403 Forbidden if user is not an admin', async () => {
-    const pdfBuffer = Buffer.from('%PDF-1.4 ...');
 
-    const response = await request(app.getHttpServer())
-      .post('/api/v1/docs/upload')
-      .set('Authorization', 'Bearer viewer-token')
-      .attach('file', pdfBuffer, 'test.pdf');
-
-    expect(response.status).toBe(HttpStatus.FORBIDDEN);
-  });
 
   // GET /api/v1/docs tests
   it('GET /api/v1/docs - should return 200 with list of documents for admin', async () => {
@@ -263,13 +252,7 @@ describe('DocsController (Integration)', () => {
     });
   });
 
-  it('DELETE /api/v1/docs/:id - should return 403 Forbidden for viewer', async () => {
-    const response = await request(app.getHttpServer())
-      .delete('/api/v1/docs/doc-exist')
-      .set('Authorization', 'Bearer viewer-token');
 
-    expect(response.status).toBe(HttpStatus.FORBIDDEN);
-  });
 
   it('DELETE /api/v1/docs/:id - should return 404 NotFound if document does not exist', async () => {
     const response = await request(app.getHttpServer())

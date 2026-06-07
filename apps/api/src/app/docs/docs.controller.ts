@@ -14,13 +14,12 @@ import {
 
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Roles } from '../auth/decorators';
 import { DocsService } from './docs.service';
 import { MulterExceptionFilter } from './multer-exception.filter';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
-import { DOCS_CONFIG, ROLES } from '../constants';
+import { DOCS_CONFIG } from '../constants';
 
 
 // Configure multer options
@@ -61,7 +60,6 @@ export class DocsController {
   constructor(private readonly docsService: DocsService) {}
 
   @Post('upload')
-  @Roles(ROLES.ADMIN)
   @UseInterceptors(FileInterceptor('file', multerOptions))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
@@ -71,7 +69,6 @@ export class DocsController {
   }
 
   @Get()
-  @Roles(ROLES.ADMIN, ROLES.VIEWER)
   async listDocuments(
     @Query('page') page?: string,
     @Query('limit') limit?: string
@@ -82,7 +79,6 @@ export class DocsController {
   }
 
   @Delete(':id')
-  @Roles(ROLES.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteDocument(@Param('id') id: string) {
     return this.docsService.deleteDocument(id);

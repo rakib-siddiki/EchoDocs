@@ -2,22 +2,19 @@
 
 import React from 'react';
 import { DocumentItem } from '../../../hooks/useDocuments';
-import { DOCUMENT_STATUS, type TAuthRole } from '@/constants';
+import { DOCUMENT_STATUS } from '@/constants';
 
 interface DocumentListProps {
   documents: DocumentItem[];
   isLoading: boolean;
-  userRole: TAuthRole;
   onDeleteRequest: (doc: DocumentItem) => void;
 }
 
 export function DocumentList({
   documents,
   isLoading,
-  userRole,
   onDeleteRequest,
 }: DocumentListProps) {
-  const isAdmin = userRole === 'admin';
 
   const getStatusBadge = (status: DocumentItem['status']) => {
     switch (status) {
@@ -140,7 +137,7 @@ export function DocumentList({
               <th className="py-4 px-6">Status</th>
               <th className="py-4 px-6">Date Uploaded</th>
               <th className="py-4 px-6 text-center">Chunks</th>
-              {isAdmin && <th className="py-4 px-6 text-right">Actions</th>}
+              <th className="py-4 px-6 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5 text-sm text-slate-300">
@@ -159,31 +156,29 @@ export function DocumentList({
                 <td className="py-4 px-6 text-center font-mono font-medium">
                   {doc.status === DOCUMENT_STATUS.PROCESSED ? doc.chunkCount : '-'}
                 </td>
-                {isAdmin && (
-                  <td className="py-4 px-6 text-right">
-                    <button
-                      type="button"
-                      onClick={() => onDeleteRequest(doc)}
-                      className="p-2 text-slate-400 hover:text-rose-400 bg-slate-800/40 hover:bg-rose-500/10 border border-white/5 hover:border-rose-500/20 rounded-xl transition-all"
-                      title="Delete document"
+                <td className="py-4 px-6 text-right">
+                  <button
+                    type="button"
+                    onClick={() => onDeleteRequest(doc)}
+                    className="p-2 text-slate-400 hover:text-rose-400 bg-slate-800/40 hover:bg-rose-500/10 border border-white/5 hover:border-rose-500/20 rounded-xl transition-all"
+                    title="Delete document"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  </td>
-                )}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

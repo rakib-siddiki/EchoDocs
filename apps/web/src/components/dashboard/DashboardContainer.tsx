@@ -6,16 +6,14 @@ import { FileUpload } from './Forms/FileUpload';
 import { DocumentList } from './components/DocumentList';
 import { DeleteConfirmDialog } from './Dialogs/DeleteConfirmDialog';
 import { useDocuments, DocumentItem } from '../../hooks/useDocuments';
-import { AUTH_ROLES } from '@/constants';
+
 
 export default function DashboardContainer() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  // Retrieve user role from our custom AuthContext
-  const userRole = (user?.role || AUTH_ROLES.VIEWER);
-  const isAdmin = userRole === AUTH_ROLES.ADMIN;
+
 
   // TanStack Query custom hook for documents
   const {
@@ -67,26 +65,13 @@ export default function DashboardContainer() {
           </p>
         </div>
 
-        {/* Upload Zone (Only visible to Admins) */}
-        {isAdmin ? (
-          <div>
-            <h2 className="text-lg font-semibold text-slate-300 mb-3">
-              Upload New Materials
-            </h2>
-            <FileUpload onUpload={uploadFile} />
-          </div>
-        ) : (
-          <div className="bg-slate-900/35 border border-white/5 rounded-2xl p-4 flex items-center gap-3">
-            <span className="w-2.5 h-2.5 bg-purple-500 rounded-full shadow-[0_0_8px_#a855f7]" />
-            <span className="text-xs font-semibold text-purple-300 uppercase tracking-wider">
-              Viewer Account
-            </span>
-            <span className="text-xs text-slate-400 border-l border-white/10 pl-3">
-              You are signed in as a viewer. Contact your administrator to
-              upload or delete documents.
-            </span>
-          </div>
-        )}
+        {/* Upload Zone */}
+        <div>
+          <h2 className="text-lg font-semibold text-slate-300 mb-3">
+            Upload New Materials
+          </h2>
+          <FileUpload onUpload={uploadFile} />
+        </div>
 
         {/* Documents Table */}
         <div className="flex flex-col gap-4">
@@ -102,7 +87,6 @@ export default function DashboardContainer() {
           <DocumentList
             documents={documents}
             isLoading={isLoading}
-            userRole={userRole}
             onDeleteRequest={handleDeleteRequest}
           />
 

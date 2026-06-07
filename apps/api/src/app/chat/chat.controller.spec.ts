@@ -50,14 +50,12 @@ describe('ChatController (Integration)', () => {
         return {
           id: 'admin_user',
           email: 'admin@echodocs.com',
-          role: 'admin',
         };
       }
       if (token === 'viewer-token') {
         return {
           id: 'viewer_user',
           email: 'viewer@echodocs.com',
-          role: 'viewer',
         };
       }
       throw new Error('Invalid token');

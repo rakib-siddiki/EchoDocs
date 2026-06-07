@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { hashPassword, verifyPassword, signAccessToken, signRefreshToken, verifyRefreshToken } from './utils';
-import { ROLES, type TAuthRole } from '../constants';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +13,6 @@ export class AuthService {
   async register(
     email: string,
     password: string,
-    role: TAuthRole = ROLES.VIEWER,
   ) {
     if (!email || !password) {
       throw new BadRequestException('Email and password are required');
@@ -37,19 +35,17 @@ export class AuthService {
       data: {
         email: emailLower,
         passwordHash,
-        role,
       },
     });
 
     // Create custom Access and Refresh tokens
-    const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
+    const accessToken = signAccessToken({ id: user.id, email: user.email });
     const refreshToken = signRefreshToken({ id: user.id });
 
     return {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
       },
       accessToken,
       refreshToken,
@@ -71,14 +67,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
+    const accessToken = signAccessToken({ id: user.id, email: user.email });
     const refreshToken = signRefreshToken({ id: user.id });
 
     return {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
       },
       accessToken,
       refreshToken,
@@ -96,7 +91,7 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
-      const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.role });
+      const accessToken = signAccessToken({ id: user.id, email: user.email });
       const newRefreshToken = signRefreshToken({ id: user.id });
 
       return { accessToken, newRefreshToken };
@@ -117,7 +112,6 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      role: user.role,
     };
   }
 }

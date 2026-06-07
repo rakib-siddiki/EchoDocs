@@ -14,8 +14,8 @@ export class AuthController {
     @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) response: Response
   ) {
-    const { email, password, role } = registerDto;
-    const result = await this.authService.register(email, password, role);
+    const { email, password } = registerDto;
+    const result = await this.authService.register(email, password);
 
     // Set refresh token in httpOnly cookie
     response.cookie('refresh_token', result.refreshToken, {

@@ -18,21 +18,10 @@ async function main() {
     data: {
       email: adminEmail,
       passwordHash: adminHash,
-      role: 'admin',
     },
   });
 
-  const viewerEmail = 'viewer@echodocs.com';
-  const viewerHash = await argon2.hash('viewer123');
-  await prisma.user.create({
-    data: {
-      email: viewerEmail,
-      passwordHash: viewerHash,
-      role: 'viewer',
-    },
-  });
-
-  console.log('Successfully seeded default users: admin@echodocs.com and viewer@echodocs.com');
+  console.log('Successfully seeded default users: admin@echodocs.com');
 
   const document = await prisma.document.create({
     data: {

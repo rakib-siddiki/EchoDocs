@@ -66,7 +66,7 @@ describe('JwtAuthGuard', () => {
 
   it('should verify valid token and attach user to request', async () => {
     reflector.getAllAndOverride = jest.fn().mockReturnValue(false);
-    const mockPayload = { id: 'user_123', email: 'test@example.com', role: 'viewer' };
+    const mockPayload = { id: 'user_123', email: 'test@example.com' };
     (utils.verifyAccessToken as jest.Mock).mockReturnValue(mockPayload);
 
     const request = {
