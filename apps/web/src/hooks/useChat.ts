@@ -16,6 +16,40 @@ export interface ChatMessage {
   text: string;
   citations?: Citation[];
   isNotFound?: boolean;
+  isSystemError?: boolean;
+}
+
+function formatErrorMessage(msg: string): string {
+  if (msg.includes('API key is not configured')) {
+    return 'The Gemini API key is missing or not configured on the server. Please check your environment variables.';
+  }
+
+  const jsonStart = msg.indexOf('{');
+  if (jsonStart !== -1) {
+    try {
+      const jsonStr = msg.substring(jsonStart);
+      const parsed = JSON.parse(jsonStr);
+      const innerMessage = parsed.error?.message || parsed.message;
+      if (innerMessage) {
+        if (innerMessage.includes('experiencing high demand') || innerMessage.includes('UNAVAILABLE') || innerMessage.includes('overloaded')) {
+          return 'The AI service is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.';
+        }
+        if (innerMessage.includes('API key not valid')) {
+          return 'The configured Gemini API key is invalid. Please verify the credentials on the server.';
+        }
+        return innerMessage;
+      }
+    } catch (_) {}
+  }
+
+  if (msg.includes('status 503') || msg.includes('503') || msg.includes('UNAVAILABLE')) {
+    return 'The AI service is temporarily unavailable. Please try again in a few seconds.';
+  }
+  if (msg.includes('status 429') || msg.includes('429')) {
+    return 'Rate limit exceeded. Please slow down your requests.';
+  }
+
+  return msg;
 }
 
 function generateUUID() {
@@ -176,11 +210,12 @@ export function useChat() {
                     )
                   );
                 } else if (event.type === 'error') {
-                  throw new Error(event.message || 'Stream processing error');
+                  const streamError = new Error(event.message || 'Stream processing error');
+                  (streamError as any).isStreamError = true;
+                  throw streamError;
                 }
               } catch (e: unknown) {
-                const errorMsg = e instanceof Error ? e.message : String(e);
-                if (errorMsg.includes('Stream processing error')) {
+                if (e instanceof Error && (e as any).isStreamError) {
                   throw e;
                 }
                 console.warn('Failed to parse SSE JSON line:', jsonStr, e);
@@ -192,16 +227,18 @@ export function useChat() {
         reader.releaseLock();
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Sorry, something went wrong while processing your request.';
-      setError(err instanceof Error ? err : new Error(String(err)));
+      const rawMessage = err instanceof Error ? err.message : String(err);
+      const friendlyMessage = formatErrorMessage(rawMessage);
+      setError(err instanceof Error ? err : new Error(rawMessage));
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === aiMessageId
             ? {
                 ...msg,
-                text: errorMessage,
+                text: friendlyMessage,
                 citations: [],
-                isNotFound: true,
+                isNotFound: false,
+                isSystemError: true,
               }
             : msg
         )

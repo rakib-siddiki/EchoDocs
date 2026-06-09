@@ -1,9 +1,11 @@
 import { Controller, Post, Get, Body, Req, Res, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { Public } from './decorators';
 import { RegisterDto, LoginDto } from './dto';
 
+@Throttle({ default: { limit: 20, ttl: 60000 } })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

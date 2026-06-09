@@ -164,7 +164,7 @@ export default function ChatContainer() {
               const isCopied = copiedId === message.id;
 
               // Hide empty placeholder AI messages from rendering empty bubbles
-              if (!isUser && !message.text && !hasCitations && !message.isNotFound) {
+              if (!isUser && !message.text && !hasCitations && !message.isNotFound && !message.isSystemError) {
                 return null;
               }
 
@@ -181,6 +181,8 @@ export default function ChatContainer() {
                       className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center font-bold text-xs shadow-md border ${
                         isUser
                           ? 'bg-linear-to-tr from-sky-400 to-sky-500 text-slate-950 border-sky-400/20'
+                          : message.isSystemError
+                          ? 'bg-linear-to-tr from-rose-500 to-pink-600 text-white border-rose-400/20'
                           : 'bg-linear-to-tr from-purple-500 to-pink-500 text-white border-purple-400/20'
                       }`}
                     >
@@ -193,16 +195,26 @@ export default function ChatContainer() {
                         className={`rounded-2xl px-4.5 py-3.5 border backdrop-blur-md ${
                           isUser
                             ? 'bg-sky-500/5 border-sky-500/15 text-sky-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]'
+                            : message.isSystemError
+                            ? 'bg-rose-500/5 border-rose-500/15 text-rose-200'
                             : message.isNotFound
                             ? 'bg-amber-500/5 border-amber-500/10 text-slate-300'
                             : 'bg-white/[0.02] border-white/5 text-slate-100'
                         }`}
                       >
                         {/* If Not Found visual treatment */}
-                        {!isUser && message.isNotFound && (
+                        {!isUser && message.isNotFound && !message.isSystemError && (
                           <div className="flex items-center gap-2 mb-2 px-2.5 py-1.5 bg-amber-500/5 border border-amber-500/10 rounded-lg text-amber-500 text-[10px] font-bold uppercase tracking-wide">
                             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                             No documentation match found
+                          </div>
+                        )}
+
+                        {/* If System Error visual treatment */}
+                        {!isUser && message.isSystemError && (
+                          <div className="flex items-center gap-2 mb-2 px-2.5 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-400 text-[10px] font-bold uppercase tracking-wide">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            Service Unavailable
                           </div>
                         )}
 
@@ -237,7 +249,7 @@ export default function ChatContainer() {
                         </p>
 
                         {/* Copy / Actions Bar */}
-                        {!isUser && (
+                        {!isUser && !message.isSystemError && (
                           <div className="flex justify-end gap-2 mt-3 pt-2.5 border-t border-white/5">
                             <button
                               onClick={() => handleCopy(message.text, message.id)}

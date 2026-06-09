@@ -14,6 +14,7 @@ import {
 
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { DocsService } from './docs.service';
 import { MulterExceptionFilter } from './multer-exception.filter';
 import { diskStorage } from 'multer';
@@ -59,6 +60,7 @@ export const multerOptions = {
 export class DocsController {
   constructor(private readonly docsService: DocsService) {}
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', multerOptions))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {

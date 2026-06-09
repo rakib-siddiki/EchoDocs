@@ -11,6 +11,10 @@ import cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  // Configure trust proxy for rate limiting (behind reverse proxies)
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('trust proxy', 1);
+  
   // Use cookie-parser middleware
   app.use(cookieParser());
   

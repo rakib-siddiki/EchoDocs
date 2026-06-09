@@ -1,5 +1,6 @@
 import { Controller, Post, Body, UsePipes, ValidationPipe, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { ChatService } from './chat.service';
 import { ChatQueryDto } from './dto/chat-query.dto';
 
@@ -7,6 +8,7 @@ import { ChatQueryDto } from './dto/chat-query.dto';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @Throttle({ default: { limit: 15, ttl: 60000 } })
   @Post('query/stream')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
