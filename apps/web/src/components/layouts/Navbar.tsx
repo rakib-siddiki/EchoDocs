@@ -96,7 +96,7 @@ export function Navbar() {
                 <span className="text-[10px] font-bold text-slate-200 max-w-[140px] truncate">{user.email}</span>
               </div>
               <button
-                onClick={logout}
+                onClick={() => logout()}
                 className="text-[10px] bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-slate-300 px-2.5 py-1.5 rounded-lg border border-white/10 hover:border-red-500/20 transition-all cursor-pointer font-bold"
               >
                 Sign Out
