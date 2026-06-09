@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 
 export default function SignUpPage() {
@@ -19,12 +20,16 @@ export default function SignUpPage() {
 
     try {
       await register(email, password);
+      toast.success('Account created successfully! Welcome.');
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      const errMsg = err.message || 'Registration failed';
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 font-sans text-slate-100 p-8 relative overflow-hidden">

@@ -18,7 +18,7 @@ interface AuthContextType {
     email: string,
     password: string,
   ) => Promise<void>;
-  logout: () => void;
+  logout: (options?: { shouldRedirect?: boolean }) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const refreshPromiseRef = useRef<Promise<string> | null>(null);
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
@@ -55,39 +56,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const refreshAccessToken = async () => {
-    try {
-      const response = await fetch(`${baseUrl}/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Sends HttpOnly refresh_token cookie
-      });
-
-      if (!response.ok) {
-        throw new Error('Refresh endpoint returned error status');
-      }
-
-      const data = await response.json();
-      setCookie('token', data.token, 1);
-      setToken(data.token);
-      
-      // Schedule the next refresh
-      startRefreshTimer();
-      console.log('Successfully refreshed access token in background.');
-    } catch (error) {
-      console.error('Session expired, logging out:', error);
-      logout();
+  const refreshAccessToken = async (): Promise<string> => {
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
     }
+
+    const promise = (async () => {
+      try {
+        const response = await fetch(`${baseUrl}/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Sends HttpOnly refresh_token cookie
+        });
+
+        if (!response.ok) {
+          throw new Error('Refresh endpoint returned error status');
+        }
+
+        const data = await response.json();
+        setCookie('token', data.token, 1);
+        setToken(data.token);
+        
+        // Schedule the next refresh
+        startRefreshTimer();
+        console.log('Successfully refreshed access token in background.');
+        return data.token;
+      } catch (error) {
+        console.error('Session expired, logging out:', error);
+        const isProtectedRoute =
+          window.location.pathname.startsWith('/dashboard') ||
+          window.location.pathname.startsWith('/chat');
+        logout({ shouldRedirect: isProtectedRoute });
+        throw error;
+      } finally {
+        refreshPromiseRef.current = null;
+      }
+    })();
+
+    refreshPromiseRef.current = promise;
+    return promise;
   };
 
   useEffect(() => {
     async function loadUser() {
-      const storedToken = getCookie('token');
+      let storedToken = getCookie('token');
+      
       if (!storedToken) {
-        setIsLoading(false);
-        return;
+        try {
+          storedToken = await refreshAccessToken();
+        } catch (error) {
+          // If refreshing token fails, refreshAccessToken will trigger logout
+          // We just stop loading here.
+          setIsLoading(false);
+          return;
+        }
       }
 
       try {
@@ -104,8 +128,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Start automatic background token refresh
           startRefreshTimer();
         } else if (response.status === 401 || response.status === 403) {
-          // Token is explicitly rejected by the backend
-          logout();
+          // Token is explicitly rejected by the backend. Try to refresh it.
+          try {
+            const newToken = await refreshAccessToken();
+            const retryResponse = await fetch(`${baseUrl}/auth/me`, {
+              headers: {
+                Authorization: `Bearer ${newToken}`,
+              },
+            });
+            if (retryResponse.ok) {
+              const userData = await retryResponse.json();
+              setUser(userData);
+              setToken(newToken);
+              startRefreshTimer();
+            } else {
+              const isProtectedRoute =
+                window.location.pathname.startsWith('/dashboard') ||
+                window.location.pathname.startsWith('/chat');
+              logout({ shouldRedirect: isProtectedRoute });
+            }
+          } catch (refreshErr) {
+            console.error('Failed to auto-refresh token on initial load:', refreshErr);
+          }
         } else {
           console.warn(`Server error ${response.status} checking session. Retaining offline session.`);
         }
@@ -176,7 +220,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/dashboard');
   };
 
-  const logout = async () => {
+  const logout = async (options?: { shouldRedirect?: boolean }) => {
+    const shouldRedirect = options?.shouldRedirect ?? true;
     stopRefreshTimer();
 
     try {
@@ -191,8 +236,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     deleteCookie('token');
     setUser(null);
     setToken(null);
-    router.push('/sign-in');
+    
+    if (shouldRedirect) {
+      router.push('/sign-in');
+    }
   };
+
 
   return (
     <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>

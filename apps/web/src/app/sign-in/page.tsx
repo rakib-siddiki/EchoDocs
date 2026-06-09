@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function SignInPage() {
   const { login } = useAuth();
@@ -18,12 +19,16 @@ export default function SignInPage() {
 
     try {
       await login(email, password);
+      toast.success('Successfully signed in! Welcome back.');
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password');
+      const errMsg = err.message || 'Invalid email or password';
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsLoading(false);
     }
   };
+
 
 
   return (
