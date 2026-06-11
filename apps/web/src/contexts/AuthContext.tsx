@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { getCookie, setCookie, deleteCookie } from '@/lib/auth-utils';
 
@@ -14,11 +20,9 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (
-    email: string,
-    password: string,
-  ) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: (options?: { shouldRedirect?: boolean }) => void;
+  refreshAccessToken: () => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,7 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const refreshPromiseRef = useRef<Promise<string> | null>(null);
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
   const startRefreshTimer = () => {
     if (refreshTimerRef.current) {
@@ -40,13 +45,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Refresh every 14 minutes (shortly before 15m access token expires)
-    refreshTimerRef.current = setTimeout(async () => {
-      try {
-        await refreshAccessToken();
-      } catch (error) {
-        console.error('Background token refresh failed:', error);
-      }
-    }, 14 * 60 * 1000);
+    refreshTimerRef.current = setTimeout(
+      async () => {
+        try {
+          await refreshAccessToken();
+        } catch (error) {
+          console.error('Background token refresh failed:', error);
+        }
+      },
+      14 * 60 * 1000,
+    );
   };
 
   const stopRefreshTimer = () => {
@@ -62,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const promise = (async () => {
+      let isSessionExpired = false;
       try {
         const response = await fetch(`${baseUrl}/auth/refresh`, {
           method: 'POST',
@@ -72,23 +81,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (!response.ok) {
-          throw new Error('Refresh endpoint returned error status');
+          if (response.status === 401 || response.status === 403) {
+            isSessionExpired = true;
+          }
+          throw new Error(
+            `Refresh endpoint returned error status: ${response.status}`,
+          );
         }
 
         const data = await response.json();
         setCookie('token', data.token, 1);
         setToken(data.token);
-        
+
         // Schedule the next refresh
         startRefreshTimer();
         console.log('Successfully refreshed access token in background.');
         return data.token;
       } catch (error) {
-        console.error('Session expired, logging out:', error);
-        const isProtectedRoute =
-          window.location.pathname.startsWith('/dashboard') ||
-          window.location.pathname.startsWith('/chat');
-        logout({ shouldRedirect: isProtectedRoute });
+        console.error('Session expired or error refreshing token:', error);
+        if (isSessionExpired) {
+          const isProtectedRoute =
+            typeof window !== 'undefined' &&
+            (window.location.pathname.startsWith('/dashboard') ||
+              window.location.pathname.startsWith('/chat'));
+          logout({ shouldRedirect: isProtectedRoute });
+        }
         throw error;
       } finally {
         refreshPromiseRef.current = null;
@@ -102,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function loadUser() {
       let storedToken = getCookie('token');
-      
+
       if (!storedToken) {
         try {
           storedToken = await refreshAccessToken();
@@ -148,14 +165,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               logout({ shouldRedirect: isProtectedRoute });
             }
           } catch (refreshErr) {
-            console.error('Failed to auto-refresh token on initial load:', refreshErr);
+            console.error(
+              'Failed to auto-refresh token on initial load:',
+              refreshErr,
+            );
           }
         } else {
-          console.warn(`Server error ${response.status} checking session. Retaining offline session.`);
+          console.warn(
+            `Server error ${response.status} checking session. Retaining offline session.`,
+          );
         }
       } catch (error) {
         // Fetch failed due to network error (e.g., server offline). Keep local session intact!
-        console.error('Network error checking user profile, retaining session:', error);
+        console.error(
+          'Network error checking user profile, retaining session:',
+          error,
+        );
       } finally {
         setIsLoading(false);
       }
@@ -187,10 +212,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setCookie('token', data.token, 1);
     setUser(data.user);
     setToken(data.token);
-    
+
     // Start background refresh
     startRefreshTimer();
-    
+
     router.push('/dashboard');
   };
 
@@ -236,15 +261,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     deleteCookie('token');
     setUser(null);
     setToken(null);
-    
+
     if (shouldRedirect) {
       router.push('/sign-in');
     }
   };
 
-
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        isLoading,
+        login,
+        register,
+        logout,
+        refreshAccessToken,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

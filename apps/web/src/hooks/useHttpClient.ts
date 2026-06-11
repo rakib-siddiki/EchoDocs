@@ -1,15 +1,29 @@
 'use client';
 
-import { getCookie, setCookie } from '@/lib/auth-utils';
+import { getCookie } from '@/lib/auth-utils';
+import { useAuth } from '@/contexts/AuthContext';
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const baseUrl =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 export function useHttpClient() {
-  const request = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
-    const token = getCookie('token');
+  const { refreshAccessToken } = useAuth();
+
+  const getAuthHeaders = (
+    tokenOverride?: string | null,
+  ): Record<string, string> => {
+    const activeToken =
+      tokenOverride !== undefined ? tokenOverride : getCookie('token');
+    return activeToken ? { Authorization: `Bearer ${activeToken}` } : {};
+  };
+
+  const request = async <T>(
+    path: string,
+    options: RequestInit & { _isRaw?: boolean } = {},
+  ): Promise<T> => {
     const headers = {
       ...options.headers,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...getAuthHeaders(),
     };
 
     let response = await fetch(`${baseUrl}${path}`, {
@@ -25,29 +39,19 @@ export function useHttpClient() {
       path !== '/auth/refresh'
     ) {
       try {
-        const refreshResponse = await fetch(`${baseUrl}/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
+        // Use the centralized and deduplicated refresh logic from AuthContext
+        const newToken = await refreshAccessToken();
+
+        // Retry the original request with the new access token
+        const retryHeaders = {
+          ...headers,
+          ...getAuthHeaders(newToken),
+        };
+
+        response = await fetch(`${baseUrl}${path}`, {
+          ...options,
+          headers: retryHeaders,
         });
-
-        if (refreshResponse.ok) {
-          const data = await refreshResponse.json();
-          const newToken = data.token;
-
-          // Save the new token in cookies
-          setCookie('token', newToken, 1);
-
-          // Retry the original request with the new access token
-          const retryHeaders = {
-            ...headers,
-            Authorization: `Bearer ${newToken}`,
-          };
-
-          response = await fetch(`${baseUrl}${path}`, {
-            ...options,
-            headers: retryHeaders,
-          });
-        }
       } catch (err) {
         console.error('Failed to auto-refresh token during fetch:', err);
       }
@@ -67,6 +71,10 @@ export function useHttpClient() {
       throw new Error(errorMessage);
     }
 
+    if (options._isRaw) {
+      return response as unknown as T;
+    }
+
     if (response.status === 204) {
       return null as unknown as T;
     }
@@ -75,6 +83,8 @@ export function useHttpClient() {
   };
 
   return {
+    raw: (path: string, options?: RequestInit) =>
+      request<Response>(path, { ...options, _isRaw: true }),
     get: <T>(path: string, options?: RequestInit) =>
       request<T>(path, { ...options, method: 'GET' }),
     post: <T>(path: string, body?: unknown, options?: RequestInit) => {

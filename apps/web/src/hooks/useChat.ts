@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getCookie, setCookie } from '@/lib/auth-utils';
+import { useHttpClient } from '@/hooks/useHttpClient';
 
 export interface Citation {
   documentId: string;
@@ -31,7 +31,11 @@ function formatErrorMessage(msg: string): string {
       const parsed = JSON.parse(jsonStr);
       const innerMessage = parsed.error?.message || parsed.message;
       if (innerMessage) {
-        if (innerMessage.includes('experiencing high demand') || innerMessage.includes('UNAVAILABLE') || innerMessage.includes('overloaded')) {
+        if (
+          innerMessage.includes('experiencing high demand') ||
+          innerMessage.includes('UNAVAILABLE') ||
+          innerMessage.includes('overloaded')
+        ) {
           return 'The AI service is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.';
         }
         if (innerMessage.includes('API key not valid')) {
@@ -42,7 +46,11 @@ function formatErrorMessage(msg: string): string {
     } catch (_) {}
   }
 
-  if (msg.includes('status 503') || msg.includes('503') || msg.includes('UNAVAILABLE')) {
+  if (
+    msg.includes('status 503') ||
+    msg.includes('503') ||
+    msg.includes('UNAVAILABLE')
+  ) {
     return 'The AI service is temporarily unavailable. Please try again in a few seconds.';
   }
   if (msg.includes('status 429') || msg.includes('429')) {
@@ -53,7 +61,11 @@ function formatErrorMessage(msg: string): string {
 }
 
 function generateUUID() {
-  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+  if (
+    typeof window !== 'undefined' &&
+    window.crypto &&
+    window.crypto.randomUUID
+  ) {
     return window.crypto.randomUUID();
   }
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -64,6 +76,7 @@ function generateUUID() {
 }
 
 export function useChat() {
+  const api = useHttpClient();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sessionId, setSessionId] = useState<string>('');
   const [isPending, setIsPending] = useState(false);
@@ -100,66 +113,13 @@ export function useChat() {
     setMessages((prev) => [...prev, aiMsg]);
 
     try {
-      let token = getCookie('token');
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
-      const url = `${baseUrl}/chat/query/stream`;
-
-      let response = await fetch(url, {
+      const response = await api.raw('/chat/query/stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ query, sessionId }),
       });
-
-      // Handle token expiration/rotation refresh
-      if (
-        response.status === 401 &&
-        url.indexOf('/auth/login') === -1 &&
-        url.indexOf('/auth/register') === -1
-      ) {
-        try {
-          const refreshResponse = await fetch(`${baseUrl}/auth/refresh`, {
-            method: 'POST',
-            credentials: 'include',
-          });
-
-          if (refreshResponse.ok) {
-            const data = await refreshResponse.json();
-            const newToken = data.token;
-
-            setCookie('token', newToken, 1);
-            token = newToken;
-
-            // Retry request with new token
-            response = await fetch(url, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-              },
-              body: JSON.stringify({ query, sessionId }),
-            });
-          }
-        } catch (refreshErr) {
-          console.error('Failed to auto-refresh token during stream fetch:', refreshErr);
-        }
-      }
-
-      if (!response.ok) {
-        let errorMessage = `Request failed with status ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (_) {
-          try {
-            const textError = await response.text();
-            errorMessage = textError || errorMessage;
-          } catch (__) {}
-        }
-        throw new Error(errorMessage);
-      }
 
       if (!response.body) {
         throw new Error('Response body is null');
@@ -191,8 +151,8 @@ export function useChat() {
                   fullText += event.content;
                   setMessages((prev) =>
                     prev.map((msg) =>
-                      msg.id === aiMessageId ? { ...msg, text: fullText } : msg
-                    )
+                      msg.id === aiMessageId ? { ...msg, text: fullText } : msg,
+                    ),
                   );
                 } else if (event.type === 'citations') {
                   const hasNoCitations = event.citations.length === 0;
@@ -206,11 +166,13 @@ export function useChat() {
                     prev.map((msg) =>
                       msg.id === aiMessageId
                         ? { ...msg, citations: event.citations, isNotFound }
-                        : msg
-                    )
+                        : msg,
+                    ),
                   );
                 } else if (event.type === 'error') {
-                  const streamError = new Error(event.message || 'Stream processing error');
+                  const streamError = new Error(
+                    event.message || 'Stream processing error',
+                  );
                   (streamError as any).isStreamError = true;
                   throw streamError;
                 }
@@ -240,8 +202,8 @@ export function useChat() {
                 isNotFound: false,
                 isSystemError: true,
               }
-            : msg
-        )
+            : msg,
+        ),
       );
     } finally {
       setIsPending(false);
