@@ -5,6 +5,10 @@ import Providers from '../components/Providers';
 export const metadata = {
   title: 'EchoDocs – AI-Powered RAG Knowledge Engine',
   description: 'Grounded AI documentation search and question answering engine.',
+  icons: {
+    icon: '/favicon.png',
+    apple: '/apple-icon.png',
+  },
 };
 
 export default function RootLayout({
