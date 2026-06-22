@@ -13,19 +13,22 @@ export class AuthController {
   @Public()
   @Post('register')
   async register(
+    @Req() request: Request,
     @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) response: Response
   ) {
     const { email, password } = registerDto;
     const result = await this.authService.register(email, password);
 
+    const isSecure = request.secure || request.headers['x-forwarded-proto'] === 'https';
+
     // Set refresh token in httpOnly cookie
     response.cookie('refresh_token', result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
     });
 
     return {
@@ -37,19 +40,22 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(
+    @Req() request: Request,
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response
   ) {
     const { email, password } = loginDto;
     const result = await this.authService.login(email, password);
 
+    const isSecure = request.secure || request.headers['x-forwarded-proto'] === 'https';
+
     // Set refresh token in httpOnly cookie
     response.cookie('refresh_token', result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
     });
 
     return {
@@ -71,13 +77,15 @@ export class AuthController {
 
     const result = await this.authService.refreshTokens(refreshToken);
 
+    const isSecure = request.secure || request.headers['x-forwarded-proto'] === 'https';
+
     // Set new rotated refresh token in httpOnly cookie
     response.cookie('refresh_token', result.newRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
     });
 
     return {
@@ -87,10 +95,14 @@ export class AuthController {
 
   @Public()
   @Post('logout')
-  async logout(@Res({ passthrough: true }) response: Response) {
+  async logout(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    const isSecure = request.secure || request.headers['x-forwarded-proto'] === 'https';
     response.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       path: '/',
     });

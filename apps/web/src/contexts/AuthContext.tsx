@@ -50,7 +50,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           await refreshAccessToken();
         } catch (error) {
-          console.error('Background token refresh failed:', error);
+          console.error('Background token refresh failed, scheduling retry in 1 minute:', error);
+          // If session didn't expire (e.g. network issue), schedule a retry in 1 minute
+          refreshTimerRef.current = setTimeout(
+            async () => {
+              try {
+                await refreshAccessToken();
+              } catch (retryError) {
+                console.error('Background token refresh retry failed, resetting timer:', retryError);
+                // Keep trying by resetting the main refresh timer
+                startRefreshTimer();
+              }
+            },
+            60 * 1000,
+          );
         }
       },
       14 * 60 * 1000,
@@ -190,6 +203,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       stopRefreshTimer();
+    };
+  }, []);
+
+  // Proactively refresh tokens when the window/tab is focused or becomes visible
+  useEffect(() => {
+    const handleFocus = async () => {
+      const storedToken = getCookie('token');
+      if (!storedToken) {
+        return;
+      }
+
+      try {
+        const tokenParts = storedToken.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const exp = payload.exp * 1000;
+          const now = Date.now();
+
+          // If expired or expiring in less than 2 minutes, refresh it immediately
+          if (exp - now < 2 * 60 * 1000) {
+            console.log('Access token is close to expiry or expired, refreshing on window focus.');
+            await refreshAccessToken();
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check/refresh token on window focus:', err);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        handleFocus();
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
     };
   }, []);
 

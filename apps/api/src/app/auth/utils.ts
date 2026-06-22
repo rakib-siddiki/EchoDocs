@@ -35,11 +35,11 @@ export function signAccessToken(payload: any): string {
 }
 
 /**
- * Sign a Refresh Token (expires in 7 days)
+ * Sign a Refresh Token (expires in 15 days)
  */
 export function signRefreshToken(payload: any): string {
   const { iat, exp, type, ...cleanPayload } = payload;
-  return jwt.sign({ ...cleanPayload, type: 'refresh' }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ ...cleanPayload, type: 'refresh' }, JWT_SECRET, { expiresIn: '15d' });
 }
 
 /**
