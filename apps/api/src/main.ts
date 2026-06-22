@@ -7,6 +7,8 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import cookieParser from 'cookie-parser';
+import { Request, Response, NextFunction } from 'express';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +19,13 @@ async function bootstrap() {
   
   // Use cookie-parser middleware
   app.use(cookieParser());
+  
+  // Request logging middleware
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    Logger.log(`[${req.method}] ${req.originalUrl || req.url}`, 'HTTP');
+    next();
+  });
+
   
   // Enable global validation pipes
   app.useGlobalPipes(new ValidationPipe({
@@ -36,7 +45,7 @@ async function bootstrap() {
   const port = process.env.API_PORT || process.env.PORT || 5000;
   await app.listen(port);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
+    `🚀 Application is running on: ${process.env.NEXT_PUBLIC_API_URL}`,
   );
 }
 
