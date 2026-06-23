@@ -26,7 +26,7 @@ export class AuthController {
     response.cookie('refresh_token', result.refreshToken, {
       httpOnly: true,
       secure: isSecure,
-      sameSite: 'lax',
+      sameSite: isSecure ? 'none' : 'lax',
       path: '/',
       maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
     });
@@ -53,7 +53,7 @@ export class AuthController {
     response.cookie('refresh_token', result.refreshToken, {
       httpOnly: true,
       secure: isSecure,
-      sameSite: 'lax',
+      sameSite: isSecure ? 'none' : 'lax',
       path: '/',
       maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
     });
@@ -83,7 +83,7 @@ export class AuthController {
     response.cookie('refresh_token', result.newRefreshToken, {
       httpOnly: true,
       secure: isSecure,
-      sameSite: 'lax',
+      sameSite: isSecure ? 'none' : 'lax',
       path: '/',
       maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
     });
@@ -103,7 +103,7 @@ export class AuthController {
     response.clearCookie('refresh_token', {
       httpOnly: true,
       secure: isSecure,
-      sameSite: 'lax',
+      sameSite: isSecure ? 'none' : 'lax',
       path: '/',
     });
     return { success: true };
