@@ -16,8 +16,7 @@
     "paths": {
       "@echodocs/ai": ["./libs/ai/src/index.ts"],
       "@echodocs/types": ["./libs/types/src/index.ts"],
-      "@echodocs/utils": ["./libs/utils/src/index.ts"],
-      "@echodocs/ui": ["./libs/ui/src/index.ts"]
+      "@echodocs/utils": ["./libs/utils/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
