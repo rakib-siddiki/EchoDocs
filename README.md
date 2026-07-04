@@ -12,7 +12,7 @@ An Enterprise-grade Retrieval-Augmented Generation (RAG) Knowledge Engine built 
 - **Database / ORM**: PostgreSQL with `pgvector` extension & Prisma ORM
 - **AI/LLM Integrations**: 
   - Google Gemini API `gemini-embedding-001` (768-dimensional embeddings)
-  - Google Gemini API `gemini-3.5-flash` (Streaming SSE content generation)
+  - Google Gemini API `gemini-3.1-flash-lite` (Streaming SSE content generation)
 
 ---
 
@@ -65,7 +65,7 @@ sequenceDiagram
     DB-->>API: Return Top 5 closest chunks
     API->>API: Filter similarity & combine with System FAQ
     API->>API: Construct prompt with Grounding context
-    API->>Gemini: Stream chat response (gemini-3.5-flash)
+    API->>Gemini: Stream chat response (gemini-3.1-flash-lite)
     Gemini-->>API: Stream answer tokens (SSE)
     API-->>User: Stream SSE: Tokens + Citations
 ```
