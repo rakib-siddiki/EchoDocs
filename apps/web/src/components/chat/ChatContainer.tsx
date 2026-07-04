@@ -83,23 +83,23 @@ export default function ChatContainer() {
   };
 
   return (
-    <main className="flex-1 flex flex-col h-[calc(100vh-73px)] w-full max-w-5xl mx-auto px-6 py-6 overflow-hidden relative z-10 selection:bg-purple-500/30 selection:text-white">
+    <main className="flex-1 flex flex-col h-[calc(100vh-73px)] w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 overflow-hidden relative z-10 selection:bg-purple-500/30 selection:text-white">
       {/* Decorative background glows */}
       <div className="absolute top-[10%] right-[-10%] w-[300px] h-[300px] bg-sky-500/5 rounded-full blur-[80px] pointer-events-none animate-pulse-glow" />
       <div className="absolute bottom-[20%] left-[-10%] w-[350px] h-[350px] bg-purple-500/5 rounded-full blur-[90px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '2.5s' }} />
 
       {/* Chat Header */}
-      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4 shrink-0">
+      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4 shrink-0 gap-2">
         <div>
-          <h1 className="text-xl md:text-2xl font-black bg-linear-to-r from-slate-50 via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-sky-400 animate-pulse" />
-            AI Knowledge Assistant
+          <h1 className="text-lg sm:text-xl md:text-2xl font-black bg-linear-to-r from-slate-50 via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-1.5 sm:gap-2">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400 animate-pulse shrink-0" />
+            AI Assistant
           </h1>
-          <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5 font-light">
+          <p className="text-[10px] sm:text-xs text-slate-400 mt-1 flex items-center gap-1.5 font-light">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
             Grounded Semantic Search
             {sessionId && (
-              <span className="text-slate-500 border-l border-white/10 pl-2 font-mono text-[10px]">
+              <span className="text-slate-500 border-l border-white/10 pl-2 font-mono text-[9px] sm:text-[10px] hidden min-[500px]:inline">
                 ID: {sessionId.substring(0, 8)}
               </span>
             )}
@@ -109,11 +109,11 @@ export default function ChatContainer() {
         {messages.length > 0 && (
           <button
             onClick={clearChat}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-white/5 hover:bg-red-500/10 hover:text-red-400 border border-white/10 hover:border-red-500/20 text-slate-300 rounded-xl transition-all cursor-pointer hover:scale-102"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold bg-white/5 hover:bg-red-500/10 hover:text-red-400 border border-white/10 hover:border-red-500/20 text-slate-300 rounded-xl transition-all cursor-pointer hover:scale-102 shrink-0"
             title="Clear Chat History"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Clear Thread</span>
+            <span className="hidden min-[450px]:inline">Clear Thread</span>
           </button>
         )}
       </div>
@@ -131,10 +131,10 @@ export default function ChatContainer() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-black text-slate-100 mb-2">
-                Ask anything about your documents
+              <h2 className="text-xl sm:text-2xl font-black text-slate-100 mb-2">
+                Ask anything about your docs
               </h2>
-              <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed font-light">
+              <p className="text-slate-400 text-xs sm:text-sm max-w-md mx-auto leading-relaxed font-light">
                 Submit questions based on your ingested source materials. EchoDocs will synthesize
                 answers with precise source citations.
               </p>
@@ -174,11 +174,11 @@ export default function ChatContainer() {
                   className={`flex ${isUser ? 'justify-end' : 'justify-start'} w-full animate-in fade-in duration-300`}
                 >
                   <div
-                    className={`flex gap-3 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+                    className={`flex gap-2 sm:gap-3 max-w-[92%] sm:max-w-[85%] ${isUser ? 'justify-end' : 'justify-start'} ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
                   >
                     {/* Avatar Icon */}
                     <div
-                      className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center font-bold text-xs shadow-md border ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg shrink-0 flex items-center justify-center font-bold text-[10px] sm:text-xs shadow-md border ${
                         isUser
                           ? 'bg-linear-to-tr from-sky-400 to-sky-500 text-slate-950 border-sky-400/20'
                           : message.isSystemError
@@ -190,9 +190,9 @@ export default function ChatContainer() {
                     </div>
 
                     {/* Bubble Content */}
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1.5 sm:gap-2 max-w-[calc(100%-2.5rem)]">
                       <div
-                        className={`rounded-2xl px-4.5 py-3.5 border backdrop-blur-md ${
+                        className={`rounded-2xl px-3.5 py-2.5 sm:px-4.5 sm:py-3.5 border backdrop-blur-md ${
                           isUser
                             ? 'bg-sky-500/5 border-sky-500/15 text-sky-100 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]'
                             : message.isSystemError
@@ -342,25 +342,25 @@ export default function ChatContainer() {
       </div>
 
       {/* Input Bar sticking to bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-slate-950/60 backdrop-blur-lg border-t border-white/5 py-4 px-4 md:px-6 shrink-0 z-20">
+      <div className="absolute bottom-0 left-0 right-0 bg-slate-950/60 backdrop-blur-lg border-t border-white/5 py-3 sm:py-4 px-3 sm:px-6 shrink-0 z-20">
         <div className="max-w-5xl mx-auto">
           <form onSubmit={handleSubmit} className="relative flex items-center">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask a question about your documents... (Press Enter)"
+              placeholder="Ask about your documents..."
               rows={1}
               disabled={isPending}
-              className="w-full bg-slate-900/40 hover:bg-slate-900/60 focus:bg-slate-900/80 border border-white/10 focus:border-sky-500/50 rounded-2xl pl-4 pr-14 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-sky-500/20 transition-all resize-none shadow-inner min-h-[50px] max-h-32 scrollbar-thin"
+              className="w-full bg-slate-900/40 hover:bg-slate-900/60 focus:bg-slate-900/80 border border-white/10 focus:border-sky-500/50 rounded-2xl pl-4 pr-12 sm:pr-14 py-3 sm:py-3.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-hidden focus:ring-1 focus:ring-sky-500/20 transition-all resize-none shadow-inner min-h-[44px] sm:min-h-[50px] max-h-32 scrollbar-thin"
               style={{ height: 'auto' }}
             />
             <button
               type="submit"
               disabled={isPending || !input.trim()}
-              className="absolute right-2.5 px-3.5 py-2 rounded-xl bg-linear-to-r from-sky-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white font-bold transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer flex items-center justify-center shadow-md shadow-sky-500/10 hover:scale-102"
+              className="absolute right-2 sm:right-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-linear-to-r from-sky-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white font-bold transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer flex items-center justify-center shadow-md shadow-sky-500/10 hover:scale-102"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </form>
           <div className="flex justify-between items-center text-[9px] text-slate-500 mt-2 px-2 font-mono uppercase tracking-wider">
@@ -368,7 +368,7 @@ export default function ChatContainer() {
               <Terminal className="w-3 h-3 text-slate-500" />
               Verified query execution
             </span>
-            <span>Shift + Enter for newline</span>
+            <span className="hidden sm:inline">Shift + Enter for newline</span>
           </div>
         </div>
       </div>

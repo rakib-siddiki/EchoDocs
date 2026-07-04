@@ -133,11 +133,11 @@ export function DocumentList({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-white/10 bg-slate-950/20 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              <th className="py-4 px-6">Document Name</th>
-              <th className="py-4 px-6">Status</th>
-              <th className="py-4 px-6">Date Uploaded</th>
-              <th className="py-4 px-6 text-center">Chunks</th>
-              <th className="py-4 px-6 text-right">Actions</th>
+              <th className="py-4 px-4 sm:px-6">Document Name</th>
+              <th className="py-4 px-4 sm:px-6">Status</th>
+              <th className="py-4 px-4 sm:px-6 hidden sm:table-cell">Date Uploaded</th>
+              <th className="py-4 px-4 sm:px-6 text-center hidden min-[500px]:table-cell">Chunks</th>
+              <th className="py-4 px-4 sm:px-6 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5 text-sm text-slate-300">
@@ -146,21 +146,21 @@ export function DocumentList({
                 key={doc.id}
                 className="hover:bg-white/3 transition-colors duration-150"
               >
-                <td className="py-4 px-6 font-medium text-slate-200 truncate max-w-xs md:max-w-md">
+                <td className="py-4 px-4 sm:px-6 font-medium text-slate-200 truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs md:max-w-md">
                   {doc.name}
                 </td>
-                <td className="py-4 px-6">{getStatusBadge(doc.status)}</td>
-                <td className="py-4 px-6 text-xs text-slate-400">
+                <td className="py-4 px-4 sm:px-6">{getStatusBadge(doc.status)}</td>
+                <td className="py-4 px-4 sm:px-6 text-xs text-slate-400 hidden sm:table-cell">
                   {formatDate(doc.createdAt)}
                 </td>
-                <td className="py-4 px-6 text-center font-mono font-medium">
+                <td className="py-4 px-4 sm:px-6 text-center font-mono font-medium hidden min-[500px]:table-cell">
                   {doc.status === DOCUMENT_STATUS.PROCESSED ? doc.chunkCount : '-'}
                 </td>
-                <td className="py-4 px-6 text-right">
+                <td className="py-4 px-4 sm:px-6 text-right">
                   <button
                     type="button"
                     onClick={() => onDeleteRequest(doc)}
-                    className="p-2 text-slate-400 hover:text-rose-400 bg-slate-800/40 hover:bg-rose-500/10 border border-white/5 hover:border-rose-500/20 rounded-xl transition-all"
+                    className="p-2 text-slate-400 hover:text-rose-400 bg-slate-800/40 hover:bg-rose-500/10 border border-white/5 hover:border-rose-500/20 rounded-xl transition-all cursor-pointer"
                     title="Delete document"
                   >
                     <svg

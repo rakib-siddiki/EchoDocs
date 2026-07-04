@@ -70,7 +70,7 @@ export default function DashboardContainer() {
 
   return (
     <>
-      <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-10 flex flex-col gap-8 relative z-10 selection:bg-purple-500/30 selection:text-white">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 flex flex-col gap-6 sm:gap-8 relative z-10 selection:bg-purple-500/30 selection:text-white">
         
         {/* Decorative background glows */}
         <div className="absolute top-[10%] left-[-15%] w-[350px] h-[350px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none animate-pulse-glow" />
@@ -85,20 +85,20 @@ export default function DashboardContainer() {
                 WORKSPACE ACTIVE
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight bg-linear-to-r from-slate-50 via-slate-200 to-slate-400 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight bg-linear-to-r from-slate-50 via-slate-200 to-slate-400 bg-clip-text text-transparent">
               Document Management
             </h1>
-            <p className="text-slate-400 text-sm font-light mt-1">
+            <p className="text-slate-400 text-xs sm:text-sm font-light mt-1">
               Upload, monitor, and manage your source materials. Documents are chunked and embedded for RAG query context.
             </p>
           </div>
           
           {user && (
-            <div className="flex items-center gap-3 bg-white/[0.01] border border-white/5 rounded-2xl px-4 py-2 shrink-0">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
-              <div className="text-left">
+            <div className="flex items-center gap-3 bg-white/[0.01] border border-white/5 rounded-2xl px-4 py-2 shrink-0 max-w-full">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] shrink-0" />
+              <div className="text-left min-w-0">
                 <p className="text-[10px] text-slate-500 font-bold uppercase">Account ID</p>
-                <p className="text-xs font-semibold text-slate-200">{user.email}</p>
+                <p className="text-xs font-semibold text-slate-200 truncate max-w-[220px] sm:max-w-xs">{user.email}</p>
               </div>
             </div>
           )}
