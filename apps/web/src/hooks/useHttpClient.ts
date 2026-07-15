@@ -42,16 +42,18 @@ export function useHttpClient() {
         // Use the centralized and deduplicated refresh logic from AuthContext
         const newToken = await refreshAccessToken();
 
-        // Retry the original request with the new access token
-        const retryHeaders = {
-          ...headers,
-          ...getAuthHeaders(newToken),
-        };
+        if (newToken) {
+          // Retry the original request with the new access token
+          const retryHeaders = {
+            ...headers,
+            ...getAuthHeaders(newToken),
+          };
 
-        response = await fetch(`${baseUrl}${path}`, {
-          ...options,
-          headers: retryHeaders,
-        });
+          response = await fetch(`${baseUrl}${path}`, {
+            ...options,
+            headers: retryHeaders,
+          });
+        }
       } catch (err) {
         console.error('Failed to auto-refresh token during fetch:', err);
       }

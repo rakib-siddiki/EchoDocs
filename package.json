@@ -86,6 +86,7 @@
     "jest-util": "^30.0.2",
     "jsonc-eslint-parser": "^2.1.0",
     "nx": "22.7.1",
+    "playwright": "^1.61.1",
     "postcss": "^8.5.15",
     "prettier": "~3.6.2",
     "prisma": "^6.2.1",

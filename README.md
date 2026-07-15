@@ -72,6 +72,45 @@ sequenceDiagram
 
 ---
 
+## 📸 Visual Tour & Features
+
+### 🎨 1. Interactive Landing Page
+The landing page introduces the EchoDocs Engine with a premium glassmorphic interface, featuring custom-designed glows and dynamic animations. 
+* **Live Demo Playground**: Includes a mock playground where visitors can experience similarity indexing and citation grounding in real-time before signing in.
+* **Responsive Layout**: Adapts smoothly to mobile and desktop screens.
+
+![Landing Page](apps/web/public/screenshots/landing.png)
+
+---
+
+### 🔑 2. Secure JWT Authentication
+A secure, JWT-based sign-in interface protects private dashboard routes.
+* **Token Management**: Auto-refreshes login sessions using HTTP-only cookies.
+* **Ready-to-Test Accounts**: Includes seeded administrative credentials for immediate access.
+
+![Sign In Page](apps/web/public/screenshots/signin.png)
+
+---
+
+### 📊 3. Document Management Dashboard
+This is the workspace cockpit where users upload and monitor their database assets.
+* **Asynchronous Status Tracker**: Shows files moving in real-time through `PENDING` ➔ `PROCESSING` ➔ `PROCESSED` stages.
+* **Workspace Statistics**: Displays the count of indexed documents, total generated chunks, and active queue runners.
+* **Document Control**: Supports downloading source files or deleting them (which cascadingly removes all associated vector chunks from Postgres).
+
+![Dashboard](apps/web/public/screenshots/dashboard.png)
+
+---
+
+### 🧠 4. Grounded RAG Chat Assistant
+The core RAG application where users query their database in natural language.
+* **Streaming SSE (Server-Sent Events)**: Answers are generated and streamed word-by-word with zero latency.
+* **Source-Grounded Citations**: The AI cites its references inline. Users can expand the "Sources Grounded" section to view matching paragraphs, helping verify answers and prevent hallucinations.
+
+![Chat Active Conversation](apps/web/public/screenshots/chat_active.png)
+
+---
+
 ## 📁 Monorepo Folder Structure
 
 EchoDocs is organized as a clean Nx workspace with separate app boundaries and shared libraries:

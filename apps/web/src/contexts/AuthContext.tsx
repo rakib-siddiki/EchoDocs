@@ -22,7 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: (options?: { shouldRedirect?: boolean }) => void;
-  refreshAccessToken: () => Promise<string>;
+  refreshAccessToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const refreshPromiseRef = useRef<Promise<string> | null>(null);
+  const refreshPromiseRef = useRef<Promise<string | null> | null>(null);
 
   const baseUrl =
     process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
@@ -48,16 +48,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshTimerRef.current = setTimeout(
       async () => {
         try {
-          await refreshAccessToken();
+          const newToken = await refreshAccessToken();
+          if (!newToken) {
+            // Session expired, stop refresh timer (logout has already cleared it)
+            return;
+          }
         } catch (error) {
           console.error('Background token refresh failed, scheduling retry in 1 minute:', error);
+          
+          // Stop retrying if session has actually expired (token cookie was cleared by logout)
+          if (!getCookie('token')) {
+            console.log('Session is no longer active, stopping refresh timer.');
+            return;
+          }
+
           // If session didn't expire (e.g. network issue), schedule a retry in 1 minute
           refreshTimerRef.current = setTimeout(
             async () => {
               try {
-                await refreshAccessToken();
+                const newToken = await refreshAccessToken();
+                if (!newToken) return;
               } catch (retryError) {
                 console.error('Background token refresh retry failed, resetting timer:', retryError);
+                if (!getCookie('token')) return;
                 // Keep trying by resetting the main refresh timer
                 startRefreshTimer();
               }
@@ -77,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const refreshAccessToken = async (): Promise<string> => {
+  const refreshAccessToken = async (): Promise<string | null> => {
     if (refreshPromiseRef.current) {
       return refreshPromiseRef.current;
     }
@@ -96,6 +109,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
             isSessionExpired = true;
+            console.warn('Session expired (401/403) on token refresh. Logging out.');
+            const isProtectedRoute =
+              typeof window !== 'undefined' &&
+              (window.location.pathname.startsWith('/dashboard') ||
+                window.location.pathname.startsWith('/chat'));
+            logout({ shouldRedirect: isProtectedRoute });
+            return null;
           }
           throw new Error(
             `Refresh endpoint returned error status: ${response.status}`,
@@ -111,6 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Successfully refreshed access token in background.');
         return data.token;
       } catch (error) {
+        // If the error was a 401/403, we already logged out and returned null in the try block.
+        // For other errors (like network offline), we log it and throw.
         console.error('Session expired or error refreshing token:', error);
         if (isSessionExpired) {
           const isProtectedRoute =
@@ -144,6 +166,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
+      if (!storedToken) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(`${baseUrl}/auth/me`, {
           headers: {
@@ -161,6 +188,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Token is explicitly rejected by the backend. Try to refresh it.
           try {
             const newToken = await refreshAccessToken();
+            if (!newToken) {
+              const isProtectedRoute =
+                window.location.pathname.startsWith('/dashboard') ||
+                window.location.pathname.startsWith('/chat');
+              logout({ shouldRedirect: isProtectedRoute });
+              setIsLoading(false);
+              return;
+            }
             const retryResponse = await fetch(`${baseUrl}/auth/me`, {
               headers: {
                 Authorization: `Bearer ${newToken}`,
