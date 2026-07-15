@@ -96,7 +96,7 @@ export default function InteractiveDemo() {
     <div className="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 p-1 relative z-20">
       
       {/* Sidebar: File Source list */}
-      <div className="lg:col-span-4 bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 flex flex-col gap-4 shadow-xl">
+      <div className="order-2 lg:order-1 lg:col-span-4 bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-5 flex flex-col gap-4 shadow-xl">
         <div className="flex items-center justify-between border-b border-white/5 pb-3">
           <div className="flex items-center gap-2">
             <Database className="w-4 h-4 text-sky-400" />
@@ -107,7 +107,7 @@ export default function InteractiveDemo() {
           </span>
         </div>
 
-        <div className="flex flex-col gap-2 flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2 flex-1">
           {MOCK_DOCS.map((doc, idx) => (
             <div 
               key={idx} 
@@ -153,7 +153,7 @@ export default function InteractiveDemo() {
       </div>
 
       {/* Main Console: Query Interface */}
-      <div className="lg:col-span-8 bg-slate-900/30 backdrop-blur-md border border-white/5 rounded-2xl flex flex-col shadow-2xl overflow-hidden min-h-[350px]">
+      <div className="order-1 lg:order-2 lg:col-span-8 bg-slate-900/30 backdrop-blur-md border border-white/5 rounded-2xl flex flex-col shadow-2xl overflow-hidden min-h-[350px]">
         {/* Console Header */}
         <div className="bg-slate-950/40 border-b border-white/5 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -207,7 +207,7 @@ export default function InteractiveDemo() {
                   <Sparkles className="w-4 h-4 text-sky-400" />
                   <span className="text-xs font-bold text-sky-400 tracking-wider uppercase">Grounded Answer</span>
                 </div>
-                <p className="text-sm text-slate-200 leading-relaxed font-light">
+                <p className="text-sm text-slate-200 leading-relaxed font-light text-left">
                   {/* Custom rendering to highlight citations */}
                   {currentStep.answer.split(/(\[\d+\])/).map((segment, idx) => {
                     const match = segment.match(/\[(\d+)\]/);
@@ -276,9 +276,9 @@ export default function InteractiveDemo() {
         </div>
 
         {/* Footer info bar */}
-        <div className="bg-slate-950/20 border-t border-white/5 px-5 py-2.5 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-          <div className="flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="bg-slate-950/20 border-t border-white/5 px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400 font-mono text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-1.5">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span>Response verified by document embeddings</span>
           </div>
           <span>100% Hallucination Free</span>

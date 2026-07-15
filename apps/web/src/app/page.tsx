@@ -34,9 +34,9 @@ export default async function Index() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-20 pb-16 px-6 md:px-12 max-w-7xl mx-auto flex flex-col items-center text-center">
+      <section className="relative z-10 pt-16 pb-12 px-4 sm:pt-20 sm:pb-16 sm:px-6 md:px-12 max-w-7xl mx-auto flex flex-col items-center text-center">
         {/* Animated Badge */}
-        <div className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-full px-4 py-1.5 mb-8 backdrop-blur-md shadow-md animate-fade-in hover:border-white/20 transition-all duration-300">
+        <div className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-full px-4 py-1.5 mb-6 sm:mb-8 backdrop-blur-md shadow-md animate-fade-in hover:border-white/20 transition-all duration-300">
           <Sparkles className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
           <span className="text-xs font-semibold tracking-wider text-slate-300">
             INTRODUCING ECHODOCS ENGINE
@@ -45,7 +45,7 @@ export default async function Index() {
         </div>
 
         {/* Master Heading */}
-        <h1 className="text-5xl md:text-7xl font-black leading-[1.1] tracking-tight max-w-4xl mb-8 bg-linear-to-b from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-black leading-[1.15] sm:leading-[1.1] tracking-tight max-w-4xl mb-6 sm:mb-8 bg-linear-to-b from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
           Search & Query Your Documentation in
           <span className="block bg-linear-to-r from-sky-400 via-purple-400 to-pink-500 bg-clip-text text-transparent mt-2 py-1">
             Real-Time Grounded AI
@@ -53,7 +53,7 @@ export default async function Index() {
         </h1>
 
         {/* Supporting Copy */}
-        <p className="text-base md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl mx-auto mb-10">
+        <p className="text-sm sm:text-base md:text-xl text-slate-400 font-light leading-relaxed max-w-2xl mx-auto mb-8 sm:mb-10">
           EchoDocs turns your PDFs and Markdown files into interactive knowledge
           bases. Get instant, context-verified answers from your codebase or
           internal wiki with{' '}
@@ -62,10 +62,10 @@ export default async function Index() {
         </p>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-xs sm:max-w-none px-4 sm:px-0 mb-12 sm:mb-20">
           <Link
             href={isAuthenticated ? '/dashboard' : '/sign-in'}
-            className="group flex items-center gap-2 bg-linear-to-r from-sky-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white px-8 py-4 rounded-xl font-bold text-base shadow-[0_8px_25px_-5px_rgba(56,189,248,0.3)] hover:shadow-[0_10px_30px_-5px_rgba(168,85,247,0.4)] transition-all duration-300 cursor-pointer border-none scale-100 hover:scale-[1.02] active:scale-[0.98]"
+            className="group flex items-center justify-center gap-2 bg-linear-to-r from-sky-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white px-8 py-4 rounded-xl font-bold text-base shadow-[0_8px_25px_-5px_rgba(56,189,248,0.3)] hover:shadow-[0_10px_30px_-5px_rgba(168,85,247,0.4)] transition-all duration-300 cursor-pointer border-none scale-100 hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto text-center"
           >
             <span>Get Started Free</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -74,7 +74,7 @@ export default async function Index() {
             href="https://github.com/rakib-siddiki/EchoDocs"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-white/[0.02] hover:bg-white/[0.05] text-slate-200 hover:text-white px-8 py-4 rounded-xl font-bold text-base border border-white/5 hover:border-white/15 backdrop-blur-md transition-all duration-300 cursor-pointer"
+            className="flex items-center justify-center gap-2 bg-white/[0.02] hover:bg-white/[0.05] text-slate-200 hover:text-white px-8 py-4 rounded-xl font-bold text-base border border-white/5 hover:border-white/15 backdrop-blur-md transition-all duration-300 cursor-pointer w-full sm:w-auto text-center"
           >
             <svg
               viewBox="0 0 24 24"
@@ -189,7 +189,7 @@ export default async function Index() {
             </div>
 
             {/* Feature 4: Large Banner Card */}
-            <div className="md:col-span-2 bg-gradient-to-tr from-sky-500/5 to-purple-500/5 border border-sky-500/10 rounded-2xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="md:col-span-2 bg-gradient-to-tr from-sky-500/5 to-purple-500/5 border border-sky-500/10 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="max-w-xl">
                 <div className="inline-flex items-center gap-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase mb-3">
                   Developer First
@@ -206,7 +206,7 @@ export default async function Index() {
               </div>
               <Link
                 href={isAuthenticated ? '/dashboard' : '/sign-in'}
-                className="shrink-0 flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-white/10 hover:border-white/20 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300"
+                className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-white/10 hover:border-white/20 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 text-center"
               >
                 <span>Go to Dashboard</span>
                 <ArrowRight className="w-4 h-4" />
@@ -270,20 +270,20 @@ export default async function Index() {
       </section>
 
       {/* Action / Footer Section */}
-      <footer className="relative z-10 border-t border-white/5 bg-slate-950/80 pt-20 pb-12 px-6 md:px-12 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col items-center gap-12 text-center">
-          <div className="max-w-xl">
-            <h2 className="text-3xl font-black text-slate-100 mb-4">
+      <footer className="relative z-10 border-t border-white/5 bg-slate-950/80 pt-16 pb-10 md:pt-20 md:pb-12 px-4 sm:px-6 md:px-12 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-10 md:gap-12 text-center">
+          <div className="max-w-xl w-full px-4 sm:px-0">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-100 mb-4">
               Unlock the secrets within your docs.
             </h2>
-            <p className="text-sm text-slate-400 mb-8 font-light">
+            <p className="text-sm text-slate-400 mb-6 sm:mb-8 font-light">
               Stop digging through multi-page PDFs or endless documentation
               folders. EchoDocs gives you instant, verified answers with full
               tracing.
             </p>
             <Link
               href={isAuthenticated ? '/dashboard' : '/sign-in'}
-              className="inline-flex items-center gap-2 bg-linear-to-r from-sky-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-sky-500/10 hover:scale-[1.02] transition-all duration-300"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-linear-to-r from-sky-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-sky-500/10 hover:scale-[1.02] transition-all duration-300 text-center"
             >
               <span>Initialize Workspace</span>
               <ArrowRight className="w-4 h-4" />
