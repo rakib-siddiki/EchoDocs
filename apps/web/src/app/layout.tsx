@@ -1,6 +1,7 @@
 import './global.css';
 import { AuthProvider } from '../contexts/AuthContext';
 import Providers from '../components/Providers';
+import { Analytics } from '@vercel/analytics/react';
 
 export const metadata = {
   title: 'EchoDocs – AI-Powered RAG Knowledge Engine',
@@ -22,6 +23,7 @@ export default function RootLayout({
         <AuthProvider>
           <Providers>{children}</Providers>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
